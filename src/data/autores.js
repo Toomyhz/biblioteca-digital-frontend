@@ -1,0 +1,17 @@
+export const autores = [
+  { id: 1, nombre: 'Gabriel García Márquez' },
+  { id: 2, nombre: 'Isaac Asimov' },
+  { id: 3, nombre: 'Stephen Hawking' },
+  { id: 4, nombre: 'Marie Curie' },
+  { id: 5, nombre: 'Michio Kaku' },
+  { id: 6, nombre: 'Richard Feynman' },
+  { id: 7, nombre: 'Carl Sagan' },
+  { id: 8, nombre: 'Paul Dirac' },
+  { id: 9, nombre: 'Linus Pauling' },
+  { id: 10, nombre: 'Richard Dawkins' },
+  { id: 11, nombre: 'Brian Greene' },
+  { id: 12, nombre: 'Roger Penrose' },
+  { id: 13, nombre: 'James Clerk Maxwell' },
+  { id: 14, nombre: 'Neil deGrasse Tyson' },
+  { id: 15, nombre: 'Rosalind Franklin' },
+]

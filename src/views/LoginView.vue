@@ -1,57 +1,79 @@
-<template>
-  <div v-if="route.path === '/login'">
-    <GoogleLogin />
-  </div>
-  <div v-else>
-    <div v-if="isLoading" class="flex flex-col items-center mt-10">
-      <span class="text-xl text-white">Procesando inicio de sesión...</span>
-      <div class="loader my-4"></div>
-    </div>
-  </div>
-</template>
 <script setup>
-import GoogleLogin from '@/components/GoogleLogin.vue'
-import { useRoute } from 'vue-router'
-import axios from 'axios'
 import { onMounted, ref } from 'vue'
 
-const route = useRoute()
-const isLoading = ref(false)
+let client
+const googleReady = ref(false)
+const google = window.google
+onMounted(() => {
+  const waitForGoogle = setInterval(() => {
+    if (window.google && google.accounts) {
+      clearInterval(waitForGoogle)
+      googleReady.value = true
 
-onMounted(async () => {
-  if (route.path === '/login/callback') {
-    const code = route.query.code
-    if (code) {
-      isLoading.value = true
-      try {
-        const response = await axios.post('http://localhost:5000/api/auth/login', { code })
-        console.log('Código recibido:', response.data)
-        // Aquí podrías guardar token, redirigir, etc.
-      } catch (error) {
-        console.error('Error al enviar el código:', error)
-      } finally {
-        isLoading.value = false
-      }
+      client = google.accounts.oauth2.initCodeClient({
+        client_id: '1069979014769-6rp1isa3hqb50188pbjhmrd0gm3093q0.apps.googleusercontent.com',
+        scope: 'profile email',
+        ux_mode: 'redirect',
+        redirect_uri: 'http://localhost:5173/login/callback',
+      })
     }
-  }
+  }, 100)
 })
-</script>
-<style scoped>
-.loader {
-  border: 6px solid #f3f3f3;
-  border-top: 6px solid #3498db;
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  animation: spin 1s linear infinite;
+const callback = () => {
+  if (client) {
+    console.log('Solicitando código...')
+    client.requestCode()
+  } else {
+    console.warn('Cliente OAuth no inicializado aún.')
+  }
 }
+</script>
+<template>
+  <main class="flex flex-col items-center justify-center text-white">
+    <div class="flex flex-col items-center">
+      <h1 class="font-mono text-5xl m-50">¡Bienvenido a Biblioteca Digital UMCE!</h1>
+      <div class="max-w-xl">
+        <p class="text-center text-2xl">
+          La Biblioteca Digital UMCE es un espacio virtual que ofrece acceso a una amplia gama de
+          recursos digitales, incluyendo libros, artículos y otros materiales académicos.
+        </p>
+        <div class="flex flex-col border rounded-md items-center p-4 mb-4">
+          <p class="text-center text-lg">
+            Para acceder, necesitas iniciar sesión a traves del siguiente botón, el cual te llevará
+            a autenticarte con Google.
+          </p>
+          <div class="w-64">
+            <button
+              @click="callback"
+              :disabled="!googleReady"
+              class="text-white py-2 px-4 rounded w-full"
+            >
+              Google
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="flex">
+      <img src="@/assets/LogoUMCE-f-blanco-V.png" alt="Logo-Umce" class="w-32" />
+    </div>
+  </main>
+</template>
 
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
+<style scoped>
+main {
+  background-image:
+    linear-gradient(rgba(26, 20, 77, 0.759), rgba(0, 0, 0, 0.753)), url('@/assets/umce-area.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  height: 100vh;
+}
+button {
+  transition: background-color 0.3s ease;
+  cursor: pointer;
+  font-size: 1.2rem;
+  font-weight: bold;
+  background-color: rgb(30, 60, 120);
 }
 </style>

@@ -1,7 +1,12 @@
-<script setup></script>
+<script setup>
+import HomeCarousel from '@/components/home/HomeCarousel.vue'
+import HomeSection from '@/components/home/HomeSection.vue'
+</script>
 
 <template>
   <main>
-    <TheWelcome />
+    <HomeCarousel />
+    <HomeSection />
   </main>
 </template>
+<style scoped></style>
