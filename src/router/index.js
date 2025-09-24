@@ -31,6 +31,12 @@ const router = createRouter({
       name: 'biblioteca',
       component: () => import('../views/BibliotecaVista.vue'),
     },
+    // ✅ PRUEBA: Usar ruta relativa exacta como las otras
+    {
+      path: '/lector/:archivo',
+      name: 'lector',
+      component: () => import('../views/LectorPdfVista.vue'),
+    },
     {
       path: '/admin-biblioteca',
       name: 'admin-biblioteca',
@@ -58,32 +64,5 @@ const router = createRouter({
     },
   ],
 })
-
-//Guardia de navegación
-
-// router.beforeEach(async (to, from, next) => {
-//   if (to.meta.requiresAuth) {
-//     try {
-//       const res = await axios.get('http://localhost:5000/api/auth/validate', {
-//         withCredentials: true,
-//       })
-
-//       if (res.data.authenticated) {
-//         next()
-//       } else {
-//         throw new Error('No autenticado')
-//       }
-//     } catch (error) {
-//       Swal.fire({
-//         icon: 'warning',
-//         title: 'Sesión caducada o inválida',
-//         text: 'Por favor, inicia sesión nuevamente.',
-//       })
-//       next({ name: 'login' })
-//     }
-//   } else {
-//     next()
-//   }
-// })
 
 export default router

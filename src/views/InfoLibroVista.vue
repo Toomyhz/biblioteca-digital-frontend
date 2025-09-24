@@ -1,15 +1,32 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import { getLibro } from '@/data/api'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 
 const route = useRoute()
+const router = useRouter()
 const libro = ref(null)
 
 onMounted(async () => {
   const libroCargado = await getLibro(Number(route.params.id))
   libro.value = libroCargado
+  console.log('Libro cargado:', libro.value) // ✅ DEBUG
 })
+
+const abrirLector = () => {
+  console.log('Botón Leer clickeado') // ✅ DEBUG
+  if (libro.value && libro.value.archivo) {
+    const rutaCompleta = `/public/${libro.value.archivo}`
+    console.log('Ruta del PDF:', rutaCompleta) // ✅ DEBUG
+
+    router.push({
+      name: 'lector',
+      params: { archivo: rutaCompleta }
+    })
+  } else {
+    console.log('No hay archivo PDF definido') // ✅ DEBUG
+  }
+}
 </script>
 
 <template>
@@ -29,12 +46,13 @@ onMounted(async () => {
           <h1 class="text-3xl">{{ libro.titulo }}</h1>
           <p class="text-xl text-blue-950">{{ libro.nombre_autor }}</p>
           <div class="text-blue-950 text-xl flex justify-between w-60">
-            <a
-              href="https://drive.google.com/file/d/1MitN3xVhQwEOiZ5V15TAAC8Wwl7uE9H0/view"
+            <button
+              @click="abrirLector"
               class="w-24 border-4 border-blue-950 hover:bg-blue-950 hover:text-white transition-all duration-200"
+              :disabled="!libro.archivo"
             >
               Leer
-            </a>
+            </button>
             <button>Guardar</button>
           </div>
           <div>

@@ -18,7 +18,7 @@ export const libros = [
     carrera: 1,
     anio: 1938,
     estado: 'Disponible',
-    archivo: 'el_hombre_que_calculaba.pdf',
+    archivo: '/100.pdf',
     portada: 'https://books.google.com/books/content?id=xyz&printsec=frontcover&img=1&zoom=1',
     sinopsis:
       'Bagdad, siglo XIII: el pastor Beremiz Samir tiene la costumbre de contar los corderos, las hojas de los árboles, los cocos, los rebaños, y así se convierte sin saberlo en un gran calculador. Un día conoce a Salim, que impresionado por su habilidad para resolver los problemas matemáticos más complejos, se ofrece a presentarle ante el jeque. Y en un largo periplo el sabio pastor irá encontrándose con poetas, astrónomos, hombres poderosos, sabios, demostrando su conocimiento de los secretos de los números y la sencilla sabiduría que le ha convertido en un hombre feliz.',
