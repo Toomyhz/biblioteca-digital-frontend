@@ -1,31 +1,33 @@
 <script setup>
-import { onMounted, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import Swal from 'sweetalert2'
+import { onMounted } from 'vue'
 
-let client
-const googleReady = ref(false)
-const google = window.google
-onMounted(() => {
-  const waitForGoogle = setInterval(() => {
-    if (window.google && google.accounts) {
-      clearInterval(waitForGoogle)
-      googleReady.value = true
+const route = useRoute()
+const router = useRouter()
 
-      client = google.accounts.oauth2.initCodeClient({
-        client_id: '1069979014769-6rp1isa3hqb50188pbjhmrd0gm3093q0.apps.googleusercontent.com',
-        scope: 'profile email',
-        ux_mode: 'redirect',
-        redirect_uri: 'http://localhost:5173/login/callback',
-      })
+onMounted(async () => {
+  const err = route.query.auth_error
+  if (err) {
+    const messages = {
+      invalid_state: 'La sesión de autenticación expiró. Intenta nuevamente.',
+      token_exchange_failed: 'No se pudo validar con el proveedor.',
+      invalid_nonce: 'Validación de seguridad fallida.',
+      email_unverified: 'Tu email no está verificado en Google.',
+      invalid_domain: 'Tu correo no pertenece al dominio permitido.',
     }
-  }, 100)
-})
-const callback = () => {
-  if (client) {
-    console.log('Solicitando código...')
-    client.requestCode()
-  } else {
-    console.warn('Cliente OAuth no inicializado aún.')
+    await Swal.fire({
+      icon: 'error',
+      title: 'Error de autenticación',
+      text: messages[err] || 'No se pudo iniciar sesión.',
+    })
+    // Limpia la query para no re-mostrar al refrescar:
+    router.replace({ path: '/login', query: {} })
   }
+})
+
+function goLogin() {
+  window.location.href = import.meta.env.VITE_BACKEND_URL + '/auth/login'
 }
 </script>
 <template>
@@ -43,13 +45,7 @@ const callback = () => {
             a autenticarte con Google.
           </p>
           <div class="w-64">
-            <button
-              @click="callback"
-              :disabled="!googleReady"
-              class="text-white py-2 px-4 rounded w-full"
-            >
-              Google
-            </button>
+            <button @click="goLogin" class="text-white py-2 px-4 rounded w-full">Google</button>
           </div>
         </div>
       </div>

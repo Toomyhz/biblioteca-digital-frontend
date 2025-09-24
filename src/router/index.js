@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
 
 // import HomeView from '../views/HomeView.vue'
 import LoginView from '@/views/LoginView.vue'
@@ -12,6 +13,11 @@ const router = createRouter({
       path: '/login',
       name: 'login',
       component: LoginView,
+    },
+    {
+      path: '/auth/success',
+      name: 'authSuccess',
+      component: () => import('@/views/AuthSuccessView.vue'),
     },
     {
       path: '/login/callback',
@@ -35,6 +41,10 @@ const router = createRouter({
       path: '/admin-biblioteca',
       name: 'admin-biblioteca',
       component: () => import('../views/AdminBibliotecaVista.vue'),
+      meta: {
+        requiresAuth: true,
+        roles: ['admin'],
+      },
       children: [
         {
           path: 'libros',
@@ -61,29 +71,34 @@ const router = createRouter({
 
 //Guardia de navegación
 
-// router.beforeEach(async (to, from, next) => {
-//   if (to.meta.requiresAuth) {
-//     try {
-//       const res = await axios.get('http://localhost:5000/api/auth/validate', {
-//         withCredentials: true,
-//       })
+router.beforeEach(async (to, from, next) => {
+  const auth = useAuthStore()
 
-//       if (res.data.authenticated) {
-//         next()
-//       } else {
-//         throw new Error('No autenticado')
-//       }
-//     } catch (error) {
-//       Swal.fire({
-//         icon: 'warning',
-//         title: 'Sesión caducada o inválida',
-//         text: 'Por favor, inicia sesión nuevamente.',
-//       })
-//       next({ name: 'login' })
-//     }
-//   } else {
-//     next()
-//   }
-// })
+  // Inicializar store si no lo está
+  if (!auth.initialized) {
+    await auth.fetchUser()
+  }
+
+  // Evita quedarse en /login si ya está autenticado
+  if (to.path === '/login' && auth.isAuthed) {
+    return next('/')
+  }
+
+  // Revalida usuario
+  if (!auth.user) {
+    await auth.fetchUser()
+  }
+
+  if (to.meta.requiresAuth) {
+    if (!auth.isAuthenticated) {
+      return next('/login')
+    }
+    if (to.meta.roles && (!auth.user || !to.meta.roles.includes(auth.user.rol))) {
+      return next('/not-found')
+    }
+  }
+
+  next()
+})
 
 export default router
