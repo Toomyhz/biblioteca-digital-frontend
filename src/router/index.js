@@ -91,7 +91,7 @@ router.beforeEach(async (to, from, next) => {
   }
 
   // Evita quedarse en /login si ya está autenticado
-  if (to.path === '/login' && auth.isAuthed) {
+  if (to.path === '/login' && auth.isAuthenticated) {
     return next('/')
   }
 
