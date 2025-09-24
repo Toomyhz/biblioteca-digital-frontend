@@ -2,9 +2,7 @@
   <div class="min-h-screen bg-gray-200 flex flex-col">
     <!-- Header del lector -->
     <header class="px-6 py-4 flex items-center justify-between bg-white shadow-md z-10">
-      <h1 class="text-lg font-bold text-gray-800">
-        📖 Lector Privado
-      </h1>
+      <h1 class="text-lg font-bold text-gray-800">📖 Lector Privado</h1>
       <button
         @click="$router.back()"
         class="text-sm font-medium text-blue-600 hover:text-blue-800 transition"

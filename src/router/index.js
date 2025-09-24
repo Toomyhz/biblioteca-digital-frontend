@@ -38,6 +38,11 @@ const router = createRouter({
       component: () => import('../views/LectorPdfVista.vue'),
     },
     {
+      path: '/test-lector',
+      name: 'test-lector',
+      component: () => import('../views/testLector.vue'),
+    },
+    {
       path: '/admin-biblioteca',
       name: 'admin-biblioteca',
       component: () => import('../views/AdminBibliotecaVista.vue'),

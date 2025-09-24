@@ -22,7 +22,7 @@
     <div
       ref="flipEl"
       class="relative rounded-2xl bg-white shadow-2xl ring-1 ring-slate-200 overflow-hidden select-none"
-      style="height: 78vh;"
+      style="height: 78vh"
     >
       <div v-if="loading" class="absolute inset-0 grid place-items-center">
         <div class="animate-pulse text-slate-500">Cargando páginas…</div>
@@ -30,11 +30,9 @@
       <!-- marca de agua -->
       <div
         class="pointer-events-none absolute inset-0 grid place-items-center opacity-15"
-        style="transform: rotate(-20deg);"
+        style="transform: rotate(-20deg)"
       >
-        <div class="text-5xl font-extrabold tracking-widest text-slate-800">
-          SOLO LECTURA
-        </div>
+        <div class="text-5xl font-extrabold tracking-widest text-slate-800">SOLO LECTURA</div>
       </div>
     </div>
 
@@ -57,7 +55,7 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker
 export default {
   name: 'PrivatePdfFlipbook',
   props: {
-    pdfSrc: { type: String, required: true }
+    pdfSrc: { type: String, required: true },
   },
   data() {
     return {
@@ -66,8 +64,8 @@ export default {
       images: [],
       current: 1,
       total: 0,
-      scale: 1.4,       // zoom base de render
-      pdfBuffer: null   // guardamos el ArrayBuffer para re-render con zoom
+      scale: 1.4, // zoom base de render
+      pdfBuffer: null, // guardamos el ArrayBuffer para re-render con zoom
     }
   },
   mounted() {
@@ -83,11 +81,14 @@ export default {
     this.pageFlip?.destroy()
   },
   methods: {
-    blockContext(e) { e.preventDefault() },
+    blockContext(e) {
+      e.preventDefault()
+    },
     blockKeys(e) {
       const k = e.key.toLowerCase()
       if ((e.ctrlKey || e.metaKey) && (k === 'p' || k === 's' || k === 'u')) {
-        e.preventDefault(); e.stopPropagation()
+        e.preventDefault()
+        e.stopPropagation()
       }
     },
     async loadPdf() {
@@ -129,22 +130,28 @@ export default {
 
       // Crear instancia
       this.pageFlip = new PageFlip(this.$refs.flipEl, {
-        width: 900,        // base; el contenedor estira ("stretch")
+        width: 900, // base; el contenedor estira ("stretch")
         height: 1200,
         size: 'stretch',
         maxShadowOpacity: 0.4,
         showPageCorners: true,
         mobileScrollSupport: false,
-        usePortrait: true
+        usePortrait: true,
       })
 
       // Cargar páginas (como imágenes)
       this.pageFlip.loadFromImages(this.images)
-      this.pageFlip.on('flip', (e) => { this.current = e.data })
+      this.pageFlip.on('flip', (e) => {
+        this.current = e.data
+      })
       this.current = 1
     },
-    next() { this.pageFlip?.flipNext() },
-    prev() { this.pageFlip?.flipPrev() },
+    next() {
+      this.pageFlip?.flipNext()
+    },
+    prev() {
+      this.pageFlip?.flipPrev()
+    },
     async zoomIn() {
       this.scale = Math.min(this.scale + 0.2, 2.4)
       await this.renderAllPages()
@@ -154,8 +161,8 @@ export default {
       this.scale = Math.max(this.scale - 0.2, 0.8)
       await this.renderAllPages()
       this.initFlip()
-    }
-  }
+    },
+  },
 }
 </script>
 
@@ -175,7 +182,8 @@ export default {
   background-color: #f8fafc;
 }
 
-:global(img), :global(canvas) {
+:global(img),
+:global(canvas) {
   -webkit-user-drag: none;
   user-select: none;
   pointer-events: none; /* lectura solamente */
@@ -183,6 +191,8 @@ export default {
 
 /* Anti-impresión (mitigación visual) */
 @media print {
-  body { display: none !important; }
+  body {
+    display: none !important;
+  }
 }
 </style>
