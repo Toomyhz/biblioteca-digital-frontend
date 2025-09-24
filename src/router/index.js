@@ -37,6 +37,17 @@ const router = createRouter({
       name: 'biblioteca',
       component: () => import('../views/BibliotecaVista.vue'),
     },
+    // ✅ PRUEBA: Usar ruta relativa exacta como las otras
+    {
+      path: '/lector/:archivo',
+      name: 'lector',
+      component: () => import('../views/LectorPdfVista.vue'),
+    },
+    {
+      path: '/test-lector',
+      name: 'test-lector',
+      component: () => import('../views/testLector.vue'),
+    },
     {
       path: '/admin-biblioteca',
       name: 'admin-biblioteca',
