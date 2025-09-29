@@ -69,6 +69,10 @@ const router = createRouter({
           path: 'agregar-autor',
           component: () => import('../components/admin/AdminAgregarAutores.vue'),
         },
+        {
+          path: 'agregar-carrera',
+          component: () => import('../components/admin/AdminAgregarCarreras.vue'),
+        },
       ],
     },
     {

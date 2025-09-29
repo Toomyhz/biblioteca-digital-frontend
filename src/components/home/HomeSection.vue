@@ -7,5 +7,5 @@
 </template>
 <script setup>
 import HomeCarreras from './HomeCarreras.vue'
-import { carreras } from '@/data/carreras'
+import { carreras } from '/data/carreras'
 </script>

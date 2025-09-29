@@ -78,3 +78,59 @@ export async function eliminarAutor(id) {
     throw err
   }
 }
+
+// ==================== CARRERAS ====================
+
+export async function getCarreras() {
+  try {
+    const res = await apiClient.get('/carreras/')
+    return res.data
+  } catch (err) {
+    console.error('Error en getCarreras:', err)
+    throw err
+  }
+}
+
+export async function getCarrera(id) {
+  try {
+    const res = await apiClient.get(`/carreras/${id}`)
+    return res.data
+  } catch (err) {
+    console.error('Error en getCarrera:', err)
+    throw err
+  }
+}
+
+export async function agregarCarrera(carrera) {
+  try {
+    const res = await apiClient.post('/carreras/', {
+      new_nombre: carrera.nombre,
+    })
+    return res.data
+  } catch (err) {
+    console.error('Error agregando carrera:', err)
+    throw err
+  }
+}
+
+export async function actualizarCarrera(id, carrera) {
+  try {
+    const res = await apiClient.put(`/carreras/${id}`, {
+      edit_nombre: carrera.nombre,
+    })
+    return res.data
+  } catch (err) {
+    console.error('Error actualizando carrera:', err)
+    throw err
+  }
+}
+
+export async function eliminarCarrera(id) {
+  try {
+    const res = await apiClient.delete(`/carreras/${id}`)
+    return res.data
+  } catch (err) {
+    console.error('Error eliminando carrera:', err)
+    throw err
+  }
+}

@@ -18,7 +18,12 @@
         <RouterLink
           to="/admin-biblioteca/agregar-autor"
           class="block p-2 rounded border border-blue-800 hover:bg-blue-800 hover:border-white transition duration-200 ease-in-out"
-          >Agregar Autor</RouterLink
+          >Autores</RouterLink
+        >
+        <RouterLink
+          to="/admin-biblioteca/agregar-carrera"
+          class="block p-2 rounded border border-blue-800 hover:bg-blue-800 hover:border-white transition duration-200 ease-in-out"
+          >Carreras</RouterLink
         >
       </div>
     </div>
