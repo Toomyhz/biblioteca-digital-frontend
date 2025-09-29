@@ -18,12 +18,14 @@
       <div class="bg-blue-950 text-white p-2 lg:block rounded-xl">
         <div class="flex justify-center items-center">
           <p class="text-lg">Filtros</p>
-          <button v-if="filtros">Limpiar Filtros</button>
+          <button v-if="props.filtros">Limpiar Filtros</button>
         </div>
         <!-- CARRERAS -->
         <div class="border rounded p-1 md:border-0 md:p-0">
           <div class="flex justify-between items-center border-b-1">
             <p class="text-lg">Carreras</p>
+
+            <p>{{}}</p>
             <button @click="mostrarCarreras = !mostrarCarreras">Mostrar</button>
           </div>
           <ul
@@ -35,25 +37,20 @@
           >
             <li
               v-for="carrera in carreras"
-              :key="carrera.id"
+              :key="carrera.id_carrera"
               class="flex justify-between items-center h-8 hover:bg-blue-700 cursor-pointer"
             >
               <input
-                :id="`carrera_${carrera.id}`"
+                :id="`carrera_${carrera.id_carrera}`"
                 type="checkbox"
-                :value="carrera.id"
-                v-model="carrerasSeleccionadas"
+                :value="carrera.id_carrera"
                 class="accent-blue-600 w-4 h-4 rounded-full border-gray-300"
               />
               <label
-                :for="`carrera_${carrera.id}`"
+                :for="`carrera_${carrera.id_carrera}`"
                 class="flex justify-between items-center w-full cursor-pointer"
               >
-                <span>{{ carrera.nombre }}</span>
-                <span
-                  class="flex w-7 h-7 text-xs text-gray-400 border rounded-full justify-center items-center"
-                  >{{ carrera.cantidad_libros < 99 ? carrera.cantidad_libros : '99+' }}</span
-                >
+                <span>{{ carrera.nombre_carrera }}</span>
               </label>
             </li>
           </ul>
@@ -71,57 +68,33 @@
             ]"
             class="overflow-hidden md:py-1"
           >
-            <input
+            <!-- <input
               v-model="buscadorAutor"
               type="text"
               placeholder="Buscar autor"
               class="w-full h-8 rounded-md border-1 border-gray-300 focus:outline-none focus:border-blue-500 px-2 mb-2"
-            />
+            /> -->
             <ul>
               <li
                 v-for="autor in filteredAutores"
-                :key="autor.id"
+                :key="autor.id_autor"
                 class="flex justify-between items-center h-8 hover:bg-blue-700 cursor-pointer"
               >
-                <input
-                  :id="`autor_${autor.id}`"
+                <!-- <input
+                  :id="`autor_${autor.id_autor}`"
                   type="checkbox"
-                  :value="autor.id"
+                  :value="autor.id_autor"
                   v-model="autoresSeleccionados"
                   class="accent-blue-600 w-4 h-4 rounded-full border-gray-300"
-                />
+                /> -->
                 <label
-                  :for="`autor_${autor.id}`"
+                  :for="`autor_${autor.id_autor}`"
                   class="flex justify-between items-center w-full cursor-pointer"
                 >
-                  <span>{{ autor.nombre }}</span>
-                  <span
-                    class="flex w-7 h-7 text-xs text-gray-400 border rounded-full justify-center items-center"
-                    >{{ autor.cantidad_libros < 99 ? autor.cantidad_libros : '99+' }}</span
-                  >
+                  <span>{{ autor.nombre_completo }}</span>
                 </label>
               </li>
             </ul>
-          </div>
-        </div>
-        <!-- AÑO PUBLICACIÓN  -->
-        <div class="border rounded p-1 md:border-0 md:p-0">
-          <div class="flex justify-between items-center border-b-1">
-            <p class="text-lg">Año publicación</p>
-            <button @click="mostrarAnios = !mostrarAnios">Mostrar</button>
-          </div>
-          <div
-            :class="[
-              'transition-all duration-250 ease-in-out',
-              mostrarAnios ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0',
-            ]"
-            class="overflow-hidden md:py-1"
-          >
-            <input v-model="anioSeleccionado" type="number" :min="anios.min" />
-            <span v-if="anio && (anio < anioMin || anio > anioMax)" class="text-red-700">
-              Año fuera de rango válido ({{ anioMin }} - {{ anioMax }})
-            </span>
-            {{ anios.min }} - {{ anios.max }}
           </div>
         </div>
       </div>
@@ -129,21 +102,34 @@
   </div>
 </template>
 <script setup>
-import { ref, computed, onMounted, watch, watchEffect } from 'vue'
+import { ref, onMounted, watch, watchEffect } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { getAutores, getCarreras, getRangoAnios } from '@/data/api'
+import { getCarreras, getAutores } from '@/data/api'
+
+const props = defineProps({
+  filtros: {
+    type: Object,
+    required: true,
+  },
+})
+
 const route = useRoute()
 const router = useRouter()
+const carreras = ref([])
+const autores = ref([])
 
-const carreras = getCarreras()
-const autores = getAutores()
+onMounted(async () => {
+  autores.value = await getAutores()
+  carreras.value = await getCarreras()
+})
+
 // =====Carreras=====
 const carrerasSeleccionadas = ref([])
-onMounted(() => {
-  if (route.query.carrera) {
-    carrerasSeleccionadas.value = route.query.carrera.split(',')
-  }
-})
+// onMounted(() => {
+//   if (route.query.carrera) {
+//     carrerasSeleccionadas.value = route.query.carrera.split(',')
+//   }
+// })
 
 watch(carrerasSeleccionadas, (newValue) => {
   const query = {
@@ -163,11 +149,11 @@ const mostrarCarreras = ref(true)
 // =====Autores=====
 const autoresSeleccionados = ref([])
 
-onMounted(() => {
-  if (route.query.autor) {
-    autoresSeleccionados.value = route.query.autor.split(',')
-  }
-})
+// onMounted(() => {
+//   if (route.query.autor) {
+//     autoresSeleccionados.value = route.query.autor.split(',')
+//   }
+// })
 watch(autoresSeleccionados, (newValue) => {
   const query = {
     ...route.query,
@@ -182,37 +168,11 @@ watch(autoresSeleccionados, (newValue) => {
 })
 
 // Variable para el buscador de autores
-const buscadorAutor = ref('')
-// Computed para filtrar los autores mediante el buscador
-const MAX_AUTORES = 7
+// const buscadorAutor = ref('')
 
-const filteredAutores = computed(() => {
-  let lista = [...autores]
+const filteredAutores = autores
 
-  // Ordenar de mayor a menor según cantidad_libros
-  lista.sort((a, b) => b.cantidad_libros - a.cantidad_libros)
-
-  if (buscadorAutor.value.trim() !== '') {
-    lista = lista.filter((autor) =>
-      autor.nombre.toLowerCase().includes(buscadorAutor.value.toLowerCase()),
-    )
-  } else {
-    // Limitar si no hay búsqueda
-    lista = lista.slice(0, MAX_AUTORES)
-  }
-
-  return lista
-})
-
-const mostrarAutores = ref(false)
-
-// =====Año Publicación=====
-const anios = getRangoAnios()
-console.log(anios) // Verifica que anios tenga el rango correcto
-// Inicializar anioSeleccionado con un rango de años
-
-const anioSeleccionado = ref([])
-const mostrarAnios = ref(false)
+const mostrarAutores = ref(true)
 
 watchEffect(() => {
   if (route.query.busqueda) {

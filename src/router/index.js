@@ -65,6 +65,10 @@ const router = createRouter({
           path: 'agregar-libro',
           component: () => import('../components/admin/AdminAgregarLibro.vue'),
         },
+        {
+          path: 'agregar-autor',
+          component: () => import('../components/admin/AdminAgregarAutores.vue'),
+        },
       ],
     },
     {

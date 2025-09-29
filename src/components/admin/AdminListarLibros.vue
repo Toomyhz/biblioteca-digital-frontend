@@ -1,6 +1,6 @@
 <template>
   <div class="text-black w-screen md:w-auto">
-    <h1 class="text-2xl mb-4">Listado Libros</h1>
+    <h1 class="text-2xl mb-4">Libros</h1>
     <div class="py-5">
       <div class="flex mb-4 group">
         <label
@@ -12,7 +12,7 @@
         <input
           id="buscador-libros"
           type="text"
-          placeholder="Buscar..."
+          placeholder="Escribir un título, por ejemplo: 'Cosmos'"
           class="bg-white rounded-e-full px-4 py-2 w-1/3 border border-gray-300 focus:outline-none"
         />
       </div>
@@ -85,9 +85,10 @@ const autores = ref([])
 
 const cargando = ref(false)
 
-onMounted(() => {
-  actualizarLibros()
-  cargarAutores()
+onMounted(async () => {
+  await actualizarLibros()
+  await cargarAutores()
+  libros.value = await getLibros()
 })
 
 const actualizarLibros = async () => {

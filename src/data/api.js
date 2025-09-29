@@ -1,87 +1,80 @@
-import { libros } from './libros'
-import { autores } from './autores'
-import { carreras } from './carreras'
+import axios from 'axios'
 
-export function getLibros({ page = 1, limit = 10, filtros = {} }) {
-  const quitarAcentos = (texto) => texto.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+const API_URL = 'http://127.0.0.1:5000/api'
 
-  let librosFiltrados = libros.filter((libro) => {
-    return (
-      !filtros.busqueda ||
-      quitarAcentos(libro.titulo.toLowerCase()).includes(
-        quitarAcentos(filtros.busqueda.toLowerCase()),
-      )
-    )
-  })
+// Configuración global de axios
+const apiClient = axios.create({
+  baseURL: API_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+})
 
-  librosFiltrados = librosFiltrados.filter((libro) => {
-    return (
-      (!filtros.carreras ||
-        filtros.carreras.length === 0 ||
-        filtros.carreras.includes(libro.carrera)) &&
-      (!filtros.autores || filtros.autores.length === 0 || filtros.autores.includes(libro.autor))
-    )
-  })
+// ==================== LIBROS ====================
 
-  const total = librosFiltrados.length
-  const totalPages = Math.ceil(total / limit)
-
-  if (page > totalPages) {
-    return [] // no hay más libros que mostrar
-  }
-
-  const startIndex = (page - 1) * limit
-  const endIndex = startIndex + limit
-  const librosPaginados = librosFiltrados.slice(startIndex, endIndex)
-
-  return librosPaginados.map((libro) => {
-    const autor = autores.find((a) => a.id === libro.autor)
-    const carrera = carreras.find((c) => c.id === libro.carrera)
-    return {
-      ...libro,
-      nombre_autor: autor ? autor.nombre : 'Desconocido',
-      nombre_carrera: carrera ? carrera.nombre : 'Desconocida',
-    }
-  })
-}
-
-export function getAutores() {
-  return autores.map((autor) => {
-    const librosPorAutor = libros.filter((libro) => libro.autor === autor.id)
-    return {
-      ...autor,
-      cantidad_libros: librosPorAutor.length,
-    }
-  })
-}
-
-export function getCarreras() {
-  return carreras.map((carrera) => {
-    const librosPorCarrera = libros.filter((libro) => libro.carrera === carrera.id)
-    return {
-      ...carrera,
-      cantidad_libros: librosPorCarrera.length,
-    }
-  })
-}
-
-export function getLibro(id) {
-  const libro = libros.find((libro) => libro.id === id)
-  if (!libro) {
-    return null
-  }
-  const autor = autores.find((a) => a.id === libro.autor)
-  const carrera = carreras.find((c) => c.id === libro.carrera)
-  return {
-    ...libro,
-    nombre_autor: autor ? autor.nombre : 'Desconocido',
-    nombre_carrera: carrera ? carrera.nombre : 'Desconocida',
+export async function getLibros() {
+  try {
+    const res = await apiClient.get('/libros/')
+    return res.data
+  } catch (err) {
+    console.error('Error en getLibros:', err)
+    throw err
   }
 }
 
-export function getRangoAnios() {
-  const anios = libros.map((libro) => libro.anio)
-  const minAnio = Math.min(...anios)
-  const maxAnio = Math.max(...anios)
-  return { min: minAnio, max: maxAnio }
+// ==================== AUTORES ====================
+
+export async function getAutores() {
+  try {
+    const res = await apiClient.get('/autores/')
+    return res.data
+  } catch (err) {
+    console.error('Error en getAutores:', err)
+    throw err
+  }
+}
+export async function getAutor(id) {
+  try {
+    const res = await apiClient.get(`/autores/${id}`)
+    return res.data
+  } catch (err) {
+    console.error('Error en getAutor:', err)
+    throw err
+  }
+}
+
+export async function agregarAutor(autor) {
+  try {
+    const res = await apiClient.post('/autores/', {
+      new_nombre: autor.nombre,
+      new_nacionalidad: autor.nacionalidad || '',
+    })
+    return res.data
+  } catch (err) {
+    console.error('Error agregando autor:', err.response?.data)
+    throw err
+  }
+}
+
+export async function actualizarAutor(id, autor) {
+  try {
+    const res = await apiClient.put(`/autores/${id}`, {
+      edit_nombre: autor.nombre,
+      edit_nacionalidad: autor.nacionalidad,
+    })
+    return res.data
+  } catch (err) {
+    console.error('Error actualizando autor:', err)
+    throw err
+  }
+}
+
+export async function eliminarAutor(id) {
+  try {
+    const res = await apiClient.delete(`/autores/${id}`)
+    return res.data
+  } catch (err) {
+    console.error('Error eliminando autor:', err)
+    throw err
+  }
 }

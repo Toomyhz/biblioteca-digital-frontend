@@ -1,6 +1,6 @@
 <template class="h-full">
   <div class="flex">
-    <FiltrosLibros class="lg:w-1/4" />
+    <FiltrosLibros :filtros="filtros" class="lg:w-1/4" />
     <ListaLibros :filtros="filtros" class="lg:w-3/4" />
   </div>
 </template>
