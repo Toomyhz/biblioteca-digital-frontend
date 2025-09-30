@@ -165,7 +165,7 @@ function llenarFormulario(libro) {
   document.getElementById('anio-libro').value = libro.fecha_publicacion
     ? libro.fecha_publicacion.split('-')[0]
     : ''
-  document.getElementById('estado-libro').value = 'disponible' // Asignar estado por defecto
+  document.getElementById('estado-libro').value = 'disponible'
   document.getElementById('descripcion-libro').value = libro.descripcion || ''
   document.getElementById('imagen-libro').src = libro.imagen || '/LIBRO_SIN_PORTADA.png'
 }

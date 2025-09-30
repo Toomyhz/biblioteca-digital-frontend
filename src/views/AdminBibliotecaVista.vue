@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col lg:flex-row">
+  <div class="flex flex-col lg:flex-row flex-1">
     <div class="w-full lg:w-auto">
       <AdminSidebar />
     </div>

@@ -22,6 +22,60 @@ export async function getLibros() {
   }
 }
 
+export async function getLibro(id) {
+  try {
+    const res = await apiClient.get(`/libros/${id}`)
+    return res.data
+  } catch (err) {
+    console.error('Error en getLibro:', err)
+    throw err
+  }
+}
+
+export async function agregarLibro(libro) {
+  try {
+    const res = await apiClient.post('/libros/', {
+      new_titulo: libro.titulo,
+      new_isbn: libro.isbn,
+      new_id_autor: libro.id_autor,
+      new_id_carrera: libro.id_carrera,
+      new_estado: libro.estado,
+      new_anio_publicacion: libro.anio_publicacion,
+    })
+    return res.data
+  } catch (err) {
+    console.error('Error agregando libro:', err)
+    throw err
+  }
+}
+
+export async function actualizarLibro(id, libro) {
+  try {
+    const res = await apiClient.put(`/libros/${id}`, {
+      edit_titulo: libro.titulo,
+      edit_isbn: libro.isbn,
+      edit_id_autor: libro.id_autor,
+      edit_id_carrera: libro.id_carrera,
+      edit_estado: libro.estado,
+      edit_anio_publicacion: libro.anio_publicacion,
+    })
+    return res.data
+  } catch (err) {
+    console.error('Error actualizando libro:', err)
+    throw err
+  }
+}
+
+export async function eliminarLibro(id) {
+  try {
+    const res = await apiClient.delete(`/libros/${id}`)
+    return res.data
+  } catch (err) {
+    console.error('Error eliminando libro:', err)
+    throw err
+  }
+}
+
 // ==================== AUTORES ====================
 
 export async function getAutores() {

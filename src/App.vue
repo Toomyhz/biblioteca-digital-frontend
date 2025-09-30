@@ -5,8 +5,10 @@ const route = useRoute()
 </script>
 
 <template>
-  <TheNavbar v-if="route.name != 'login' && route.name != 'test-lector'" />
-  <RouterView class="bg-gray-200" />
+  <div class="min-h-screen bg-gray-200">
+    <TheNavbar v-if="route.name != 'login' && route.name != 'test-lector'" />
+    <RouterView />
+  </div>
 </template>
 
 <style scoped></style>

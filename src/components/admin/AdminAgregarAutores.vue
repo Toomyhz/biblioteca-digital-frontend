@@ -1,83 +1,119 @@
 <template>
-  <div class="autor-manager">
-    <h3>{{ modoEdicion ? 'Editar Autor' : 'Agregar Autor' }}</h3>
+  <div class="p-6 max-w-3xl mx-auto">
+    <h3 class="mb-4 text-xl font-semibold text-gray-800">
+      {{ modoEdicion ? 'Editar Autor' : 'Agregar Autor' }}
+    </h3>
 
-    <div class="form-group">
+    <div class="flex flex-wrap gap-2 mb-4">
       <input
         v-model="nombre"
         placeholder="Nombre del autor"
         @keyup.enter="submitAutor"
         :disabled="cargando"
+        class="flex-1 min-w-[200px] px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-green-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
       />
       <input
         v-model="nacionalidad"
         placeholder="Nacionalidad"
         @keyup.enter="submitAutor"
         :disabled="cargando"
+        class="flex-1 min-w-[200px] px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-green-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
       />
-      <button @click="submitAutor" :disabled="cargando || !nombre.trim()" class="btn-primary">
+      <button
+        @click="submitAutor"
+        :disabled="cargando || !nombre.trim()"
+        class="px-4 py-2 rounded font-medium text-white bg-green-600 hover:bg-green-700 disabled:opacity-60 disabled:cursor-not-allowed"
+      >
         {{ cargando ? 'Procesando...' : modoEdicion ? 'Actualizar' : 'Agregar' }}
       </button>
       <button
         v-if="modoEdicion"
         @click="cancelarEdicion"
         :disabled="cargando"
-        class="btn-secondary"
+        class="px-4 py-2 rounded font-medium text-white bg-gray-600 hover:bg-gray-700 disabled:opacity-60"
       >
         Cancelar
       </button>
     </div>
 
-    <p v-if="mensaje" :class="mensajeTipo">{{ mensaje }}</p>
+    <p
+      v-if="mensaje"
+      :class="{
+        'text-green-800 bg-green-100 border border-green-300 px-3 py-2 rounded mb-4':
+          mensajeTipo === 'success',
+        'text-red-800 bg-red-100 border border-red-300 px-3 py-2 rounded mb-4':
+          mensajeTipo === 'error',
+        'text-blue-800 bg-blue-100 border border-blue-300 px-3 py-2 rounded mb-4':
+          mensajeTipo === 'info',
+      }"
+    >
+      {{ mensaje }}
+    </p>
 
-    <h4>Autores ({{ autores.length }})</h4>
-    <ul v-if="autores.length > 0">
+    <h4 class="mt-8 mb-4 text-lg font-semibold text-gray-700">Autores ({{ autores.length }})</h4>
+
+    <ul v-if="autores.length > 0" class="divide-y divide-gray-200">
       <li
         v-for="autor in autores"
         :key="autor.id_autor"
-        :class="{ editando: autorEditando === autor.id_autor }"
+        :class="[
+          'flex justify-between items-center p-4 gap-4 hover:bg-gray-50',
+          autorEditando === autor.id_autor ? 'bg-blue-50 border-l-4 border-blue-400' : '',
+        ]"
       >
-        <div class="autor-info">
-          <span class="autor-nombre">{{ autor.nombre_completo }}</span>
-          <span class="autor-nacionalidad">
-            {{ autor.nacionalidad || 'Sin nacionalidad' }}
-          </span>
+        <div class="flex flex-col gap-1 flex-1">
+          <span class="font-medium text-gray-800">{{ autor.nombre_completo }}</span>
+          <span class="text-sm text-gray-600">{{ autor.nacionalidad || 'Sin nacionalidad' }}</span>
         </div>
-        <div class="autor-actions">
+        <div class="flex gap-2">
           <button
             @click="editarAutor(autor)"
             :disabled="cargando"
-            class="btn-edit"
-            title="Editar autor"
+            class="px-3 py-1.5 rounded text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-60"
           >
             Editar
           </button>
           <button
             @click="confirmarEliminar(autor)"
             :disabled="cargando"
-            class="btn-delete"
-            title="Eliminar autor"
+            class="px-3 py-1.5 rounded text-sm font-medium text-white bg-red-600 hover:bg-red-700 disabled:opacity-60"
           >
             Eliminar
           </button>
         </div>
       </li>
     </ul>
-    <p v-else class="no-data">No hay autores registrados</p>
+    <p v-else class="text-gray-500 italic text-center py-8 bg-gray-50 rounded">
+      No hay autores registrados
+    </p>
 
-    <!-- Modal de confirmación para eliminar -->
-    <div v-if="mostrarModalEliminar" class="modal-overlay" @click="cerrarModal">
-      <div class="modal" @click.stop>
-        <h3>Confirmar eliminación</h3>
-        <p>
+    <!-- Modal -->
+    <div
+      v-if="mostrarModalEliminar"
+      class="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+      @click="cerrarModal"
+    >
+      <div class="bg-white rounded-lg shadow-lg p-6 max-w-md w-[90%]" @click.stop>
+        <h3 class="text-lg font-semibold text-gray-800">Confirmar eliminación</h3>
+        <p class="mt-4 text-gray-600">
           ¿Estás seguro de que deseas eliminar al autor
           <strong>{{ autorAEliminar?.nombre_completo }}</strong
           >?
         </p>
-        <p class="warning">Esta acción no se puede deshacer.</p>
-        <div class="modal-actions">
-          <button @click="cerrarModal" class="btn-secondary" :disabled="cargando">Cancelar</button>
-          <button @click="eliminarAutor" class="btn-delete" :disabled="cargando">
+        <p class="mt-2 text-sm italic text-red-600">Esta acción no se puede deshacer.</p>
+        <div class="flex justify-end gap-3 mt-6">
+          <button
+            @click="cerrarModal"
+            :disabled="cargando"
+            class="px-4 py-2 rounded font-medium text-white bg-gray-600 hover:bg-gray-700 disabled:opacity-60"
+          >
+            Cancelar
+          </button>
+          <button
+            @click="eliminarAutor"
+            :disabled="cargando"
+            class="px-4 py-2 rounded font-medium text-white bg-red-600 hover:bg-red-700 disabled:opacity-60"
+          >
             {{ cargando ? 'Eliminando...' : 'Eliminar' }}
           </button>
         </div>
@@ -222,288 +258,3 @@ onMounted(() => {
   cargarAutores()
 })
 </script>
-
-<style scoped>
-.autor-manager {
-  padding: 1.5rem;
-  max-width: 900px;
-  margin: 0 auto;
-}
-
-h3 {
-  margin-bottom: 1rem;
-  color: #333;
-}
-
-h4 {
-  margin: 2rem 0 1rem 0;
-  color: #555;
-}
-
-.form-group {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-  flex-wrap: wrap;
-}
-
-input {
-  padding: 0.625rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  flex: 1;
-  min-width: 200px;
-  font-size: 0.95rem;
-}
-
-input:focus {
-  outline: none;
-  border-color: #4caf50;
-  box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.1);
-}
-
-input:disabled {
-  background-color: #f5f5f5;
-  cursor: not-allowed;
-}
-
-button {
-  padding: 0.625rem 1rem;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.95rem;
-  font-weight: 500;
-  transition: all 0.2s;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-}
-
-.btn-primary {
-  background-color: #4caf50;
-  color: white;
-}
-
-.btn-primary:hover:not(:disabled) {
-  background-color: #45a049;
-}
-
-.btn-secondary {
-  background-color: #6c757d;
-  color: white;
-}
-
-.btn-secondary:hover:not(:disabled) {
-  background-color: #5a6268;
-}
-
-.btn-edit {
-  background-color: #2196f3;
-  color: white;
-  padding: 0.4rem 0.75rem;
-  font-size: 0.875rem;
-}
-
-.btn-edit:hover:not(:disabled) {
-  background-color: #1976d2;
-}
-
-.btn-delete {
-  background-color: #f44336;
-  color: white;
-  padding: 0.4rem 0.75rem;
-  font-size: 0.875rem;
-}
-
-.btn-delete:hover:not(:disabled) {
-  background-color: #d32f2f;
-}
-
-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.icon {
-  font-size: 1rem;
-}
-
-.success {
-  color: #155724;
-  padding: 0.75rem;
-  background-color: #d4edda;
-  border: 1px solid #c3e6cb;
-  border-radius: 4px;
-  margin-bottom: 1rem;
-}
-
-.error {
-  color: #721c24;
-  padding: 0.75rem;
-  background-color: #f8d7da;
-  border: 1px solid #f5c6cb;
-  border-radius: 4px;
-  margin-bottom: 1rem;
-}
-
-.info {
-  color: #004085;
-  padding: 0.75rem;
-  background-color: #cce5ff;
-  border: 1px solid #b8daff;
-  border-radius: 4px;
-  margin-bottom: 1rem;
-}
-
-.no-data {
-  color: #666;
-  font-style: italic;
-  padding: 2rem;
-  text-align: center;
-  background-color: #f9f9f9;
-  border-radius: 4px;
-}
-
-ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-li {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem;
-  border-bottom: 1px solid #eee;
-  transition: background-color 0.2s;
-  gap: 1rem;
-}
-
-li:hover {
-  background-color: #f8f9fa;
-}
-
-li.editando {
-  background-color: #e3f2fd;
-  border-left: 3px solid #2196f3;
-}
-
-li:last-child {
-  border-bottom: none;
-}
-
-.autor-info {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.autor-nombre {
-  font-weight: 500;
-  color: #333;
-  font-size: 1rem;
-}
-
-.autor-nacionalidad {
-  color: #666;
-  font-size: 0.875rem;
-}
-
-.autor-actions {
-  display: flex;
-  gap: 0.5rem;
-}
-
-/* Modal styles */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  animation: fadeIn 0.2s;
-}
-
-.modal {
-  background: white;
-  padding: 2rem;
-  border-radius: 8px;
-  max-width: 500px;
-  width: 90%;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  animation: slideIn 0.3s;
-}
-
-.modal h3 {
-  margin-top: 0;
-  color: #333;
-}
-
-.modal p {
-  margin: 1rem 0;
-  color: #555;
-  line-height: 1.5;
-}
-
-.warning {
-  color: #d32f2f;
-  font-size: 0.875rem;
-  font-style: italic;
-}
-
-.modal-actions {
-  display: flex;
-  gap: 0.75rem;
-  justify-content: flex-end;
-  margin-top: 1.5rem;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes slideIn {
-  from {
-    transform: translateY(-20px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .form-group {
-    flex-direction: column;
-  }
-
-  input {
-    min-width: 100%;
-  }
-
-  li {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .autor-actions {
-    width: 100%;
-    justify-content: flex-end;
-  }
-}
-</style>
