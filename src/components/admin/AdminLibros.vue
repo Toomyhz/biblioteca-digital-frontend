@@ -24,27 +24,45 @@
       </div>
 
       <div class="flex flex-wrap gap-2 mb-3">
-        <select
-          v-model="idAutor"
-          :disabled="cargando"
-          class="flex-1 min-w-[200px] px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 disabled:bg-gray-100"
-        >
-          <option value="">Seleccionar autor</option>
-          <option v-for="autor in autores" :key="autor.id_autor" :value="autor.id_autor">
-            {{ autor.nombre_completo }}
-          </option>
-        </select>
+        <!-- Selección múltiple de autores -->
+        <div class="flex-1 min-w-[200px]">
+          <label class="block text-sm font-medium text-gray-700 mb-1"> Autores * </label>
+          <select
+            v-model="idsAutores"
+            :disabled="cargando"
+            multiple
+            size="5"
+            class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 disabled:bg-gray-100"
+          >
+            <option v-for="autor in autores" :key="autor.id_autor" :value="autor.id_autor">
+              {{ autor.nombre_completo }}
+            </option>
+          </select>
+          <p class="text-xs text-gray-500 mt-1">Mantén Ctrl/Cmd para seleccionar varios</p>
+        </div>
 
-        <select
-          v-model="idCarrera"
-          :disabled="cargando"
-          class="flex-1 min-w-[200px] px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 disabled:bg-gray-100"
-        >
-          <option value="">Seleccionar carrera</option>
-          <option v-for="carrera in carreras" :key="carrera.id_carrera" :value="carrera.id_carrera">
-            {{ carrera.nombre_carrera }}
-          </option>
-        </select>
+        <!-- Selección múltiple de carreras -->
+        <!-- DISCLAIMER, DEBERIA ESTAR FUNCIONANDO -->
+        <!-- PERO LE ERRÉ EN LA CREACION DEL MODELO EN EL BACK -->
+        <div class="flex-1 min-w-[200px]">
+          <label class="block text-sm font-medium text-gray-700 mb-1"> Carreras * </label>
+          <select
+            v-model="idsCarreras"
+            :disabled="cargando"
+            multiple
+            size="5"
+            class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 disabled:bg-gray-100"
+          >
+            <option
+              v-for="carrera in carreras"
+              :key="carrera.id_carrera"
+              :value="carrera.id_carrera"
+            >
+              {{ carrera.nombre_carrera }}
+            </option>
+          </select>
+          <p class="text-xs text-gray-500 mt-1">Mantén Ctrl/Cmd para seleccionar varias</p>
+        </div>
       </div>
 
       <div class="flex flex-wrap gap-2 mb-3">
@@ -70,11 +88,27 @@
         />
       </div>
 
+      <!-- Imput del pdf -->
+      <div class="mb-3">
+        <label class="block text-sm font-medium text-gray-700 mb-2"> PDF del libro </label>
+        <input
+          type="file"
+          accept=".pdf"
+          @change="onFileChange"
+          :disabled="cargando"
+          ref="fileInput"
+          class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100 disabled:opacity-50"
+        />
+        <p v-if="pdfFile" class="mt-1 text-sm text-gray-600">
+          Archivo seleccionado: {{ pdfFile.name }}
+        </p>
+      </div>
+
       <div class="flex gap-2 mt-4">
         <button
           @click="submitLibro"
           :disabled="cargando || !formularioValido"
-          class="px-4 py-2 rounded font-medium text-white bg-green-600 hover:bg-green-700 disabled:opacity-60"
+          class="px-4 py-2 rounded font-medium text-white bg-green-600 hover:bg-green-700 disabled:opacity-60 disabled:cursor-not-allowed"
         >
           {{ cargando ? 'Procesando...' : modoEdicion ? 'Actualizar' : 'Agregar' }}
         </button>
@@ -89,7 +123,7 @@
       </div>
     </div>
 
-    <!-- Mensajes -->
+    <!-- Mensajeria -->
     <p
       v-if="mensaje"
       :class="{
@@ -112,28 +146,30 @@
         placeholder="Buscar por título, autor o ISBN..."
         class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
       />
+      <p v-if="cargando" class="text-sm text-gray-500 mt-1">Buscando...</p>
     </div>
 
-    <h4 class="mt-8 mb-4 text-lg font-semibold text-gray-700">
-      Libros ({{ librosFiltrados.length }})
-    </h4>
+    <h4 class="mt-8 mb-4 text-lg font-semibold text-gray-700">Libros ({{ totalLibros }})</h4>
 
     <!-- Tabla -->
     <div class="overflow-x-auto rounded-lg shadow-sm mb-6">
-      <table v-if="librosFiltrados.length > 0" class="w-full bg-white border-collapse">
+      <table v-if="libros.length > 0" class="w-full bg-white border-collapse">
         <thead class="bg-gray-100 border-b border-gray-200">
           <tr>
             <th class="px-4 py-2 text-left text-xs font-semibold uppercase text-gray-600">
               Título
             </th>
-            <th class="px-4 py-2 text-left text-xs font-semibold uppercase text-gray-600">Autor</th>
             <th class="px-4 py-2 text-left text-xs font-semibold uppercase text-gray-600">
-              Carrera
+              Autores
+            </th>
+            <th class="px-4 py-2 text-left text-xs font-semibold uppercase text-gray-600">
+              Carreras
             </th>
             <th class="px-4 py-2 text-left text-xs font-semibold uppercase text-gray-600">
               Estado
             </th>
             <th class="px-4 py-2 text-left text-xs font-semibold uppercase text-gray-600">ISBN</th>
+            <th class="px-4 py-2 text-left text-xs font-semibold uppercase text-gray-600">Año</th>
             <th class="px-4 py-2 text-left text-xs font-semibold uppercase text-gray-600">
               Acciones
             </th>
@@ -141,7 +177,7 @@
         </thead>
         <tbody>
           <tr
-            v-for="libro in librosPaginados"
+            v-for="libro in libros"
             :key="libro.id_libro"
             :class="[
               'border-b border-gray-100 hover:bg-gray-50',
@@ -149,8 +185,18 @@
             ]"
           >
             <td class="px-4 py-2 font-medium text-gray-800">{{ libro.titulo }}</td>
-            <td class="px-4 py-2 text-gray-700">{{ libro.nombre_autor || 'Sin autor' }}</td>
-            <td class="px-4 py-2 text-gray-700">{{ libro.nombre_carrera || 'Sin carrera' }}</td>
+            <td class="px-4 py-2 text-gray-700">
+              <span v-if="libro.autores && libro.autores.length">
+                {{ libro.autores.map((a) => a.nombre_completo).join(', ') }}
+              </span>
+              <span v-else class="text-gray-400">Sin autores</span>
+            </td>
+            <td class="px-4 py-2 text-gray-700">
+              <span v-if="libro.carreras && libro.carreras.length">
+                {{ libro.carreras.map((c) => c.nombre_carrera).join(', ') }}
+              </span>
+              <span v-else class="text-gray-400">Sin carreras</span>
+            </td>
             <td class="px-4 py-2">
               <span
                 class="px-2 py-1 rounded-full text-xs font-semibold uppercase"
@@ -164,6 +210,7 @@
               </span>
             </td>
             <td class="px-4 py-2 font-mono text-sm text-gray-600">{{ libro.isbn || 'N/A' }}</td>
+            <td class="px-4 py-2 font-mono text-sm text-gray-600">{{ libro.anio_publicacion }}</td>
             <td class="px-4 py-2">
               <div class="flex gap-2">
                 <button
@@ -186,7 +233,7 @@
         </tbody>
       </table>
       <p v-else class="text-gray-500 italic text-center py-8 bg-gray-50 rounded">
-        No hay libros registrados
+        {{ cargando ? 'Cargando libros...' : 'No hay libros registrados' }}
       </p>
     </div>
 
@@ -194,16 +241,18 @@
     <div v-if="totalPaginas > 1" class="flex items-center justify-center gap-3 mt-4">
       <button
         @click="paginaActual--"
-        :disabled="paginaActual === 1"
-        class="px-3 py-1.5 rounded font-medium text-white bg-gray-600 hover:bg-gray-700 disabled:opacity-60"
+        :disabled="paginaActual === 1 || cargando"
+        class="px-3 py-1.5 rounded font-medium text-white bg-gray-600 hover:bg-gray-700 disabled:opacity-60 disabled:cursor-not-allowed"
       >
         Anterior
       </button>
-      <span class="text-sm text-gray-600">Página {{ paginaActual }} de {{ totalPaginas }}</span>
+      <span class="text-sm text-gray-600">
+        Página {{ paginaActual }} de {{ totalPaginas }} ({{ totalLibros }} libros)
+      </span>
       <button
         @click="paginaActual++"
-        :disabled="paginaActual === totalPaginas"
-        class="px-3 py-1.5 rounded font-medium text-white bg-gray-600 hover:bg-gray-700 disabled:opacity-60"
+        :disabled="paginaActual === totalPaginas || cargando"
+        class="px-3 py-1.5 rounded font-medium text-white bg-gray-600 hover:bg-gray-700 disabled:opacity-60 disabled:cursor-not-allowed"
       >
         Siguiente
       </button>
@@ -245,7 +294,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import {
   getLibros,
   agregarLibro,
@@ -257,10 +306,12 @@ import {
 
 const titulo = ref('')
 const isbn = ref('')
-const idAutor = ref('')
-const idCarrera = ref('')
+const idsAutores = ref([])
+const idsCarreras = ref([])
 const estado = ref('disponible')
 const anioPublicacion = ref(new Date().getFullYear())
+const pdfFile = ref(null)
+const fileInput = ref(null)
 
 const libros = ref([])
 const autores = ref([])
@@ -272,44 +323,45 @@ const modoEdicion = ref(false)
 const libroEditando = ref(null)
 const mostrarModalEliminar = ref(false)
 const libroAEliminar = ref(null)
+
 const busqueda = ref('')
 const paginaActual = ref(1)
 const librosPorPagina = 10
+const totalLibros = ref(0)
+const totalPaginas = ref(0)
 
 const formularioValido = computed(() => {
-  return titulo.value.trim() && idAutor.value && idCarrera.value
+  return titulo.value.trim() && idsAutores.value.length > 0 && idsCarreras.value.length > 0
 })
 
-const librosFiltrados = computed(() => {
-  if (!busqueda.value.trim()) {
-    return libros.value
+const onFileChange = (event) => {
+  const file = event.target.files[0]
+  if (file && file.type === 'application/pdf') {
+    pdfFile.value = file
+  } else {
+    pdfFile.value = null
+    if (file) {
+      mostrarMensaje('Por favor selecciona un archivo PDF válido', 'error')
+    }
   }
-
-  const termino = busqueda.value.toLowerCase()
-  return libros.value.filter(
-    (libro) =>
-      libro.titulo?.toLowerCase().includes(termino) ||
-      libro.nombre_autor?.toLowerCase().includes(termino) ||
-      libro.isbn?.toLowerCase().includes(termino),
-  )
-})
-
-const totalPaginas = computed(() => {
-  return Math.ceil(librosFiltrados.value.length / librosPorPagina)
-})
-
-const librosPaginados = computed(() => {
-  const inicio = (paginaActual.value - 1) * librosPorPagina
-  const fin = inicio + librosPorPagina
-  return librosFiltrados.value.slice(inicio, fin)
-})
+}
 
 const cargarLibros = async () => {
+  cargando.value = true
   try {
-    libros.value = await getLibros()
+    const response = await getLibros({
+      page: paginaActual.value,
+      limit: librosPorPagina,
+      search: busqueda.value,
+    })
+    libros.value = response.data
+    totalLibros.value = response.paginacion.total
+    totalPaginas.value = response.paginacion.total_paginas
   } catch (err) {
     console.error('Error cargando libros:', err)
     mostrarMensaje('Error al cargar la lista de libros', 'error')
+  } finally {
+    cargando.value = false
   }
 }
 
@@ -341,18 +393,18 @@ const submitLibro = async () => {
   const datosLibro = {
     titulo: titulo.value.trim(),
     isbn: isbn.value.trim(),
-    id_autor: idAutor.value,
-    id_carrera: idCarrera.value,
+    ids_autores: idsAutores.value,
+    ids_carreras: idsCarreras.value,
     estado: estado.value,
     anio_publicacion: anioPublicacion.value,
   }
 
   try {
     if (modoEdicion.value) {
-      const res = await actualizarLibro(libroEditando.value, datosLibro)
+      const res = await actualizarLibro(libroEditando.value, datosLibro, pdfFile.value)
       mostrarMensaje(res.mensaje || 'Libro actualizado exitosamente', 'success')
     } else {
-      const res = await agregarLibro(datosLibro)
+      const res = await agregarLibro(datosLibro, pdfFile.value)
       mostrarMensaje(res.mensaje || 'Libro agregado exitosamente', 'success')
     }
 
@@ -373,8 +425,8 @@ const editarLibro = (libro) => {
   libroEditando.value = libro.id_libro
   titulo.value = libro.titulo
   isbn.value = libro.isbn || ''
-  idAutor.value = libro.id_autor
-  idCarrera.value = libro.id_carrera
+  idsAutores.value = libro.autores ? libro.autores.map((a) => a.id_autor) : []
+  idsCarreras.value = libro.carreras ? libro.carreras.map((c) => c.id_carrera) : []
   estado.value = libro.estado || 'disponible'
   anioPublicacion.value = libro.anio_publicacion || new Date().getFullYear()
 
@@ -420,10 +472,14 @@ const cerrarModal = () => {
 const limpiarFormulario = () => {
   titulo.value = ''
   isbn.value = ''
-  idAutor.value = ''
-  idCarrera.value = ''
+  idsAutores.value = []
+  idsCarreras.value = []
   estado.value = 'disponible'
   anioPublicacion.value = new Date().getFullYear()
+  pdfFile.value = null
+  if (fileInput.value) {
+    fileInput.value.value = ''
+  }
   modoEdicion.value = false
   libroEditando.value = null
 }
@@ -438,6 +494,19 @@ const mostrarMensaje = (texto, tipo = 'info') => {
     }, 3000)
   }
 }
+
+watch(paginaActual, () => {
+  cargarLibros()
+})
+
+let busquedaTimeout
+watch(busqueda, () => {
+  clearTimeout(busquedaTimeout)
+  busquedaTimeout = setTimeout(() => {
+    paginaActual.value = 1
+    cargarLibros()
+  }, 500)
+})
 
 onMounted(async () => {
   await Promise.all([cargarLibros(), cargarAutores(), cargarCarreras()])

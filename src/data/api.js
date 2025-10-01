@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { buscarIsbn } from './googleBooks'
 
 const API_URL = 'http://127.0.0.1:5000/api'
 
@@ -12,9 +13,16 @@ const apiClient = axios.create({
 
 // ==================== LIBROS ====================
 
-export async function getLibros() {
+export async function getLibros(params = {}) {
   try {
-    const res = await apiClient.get('/libros/')
+    const { page = 1, limit = 10, search = '' } = params
+    const res = await apiClient.get('/libros/', {
+      params: {
+        pagina: page,
+        limite: limit,
+        busqueda: search,
+      },
+    })
     return res.data
   } catch (err) {
     console.error('Error en getLibros:', err)
@@ -32,16 +40,45 @@ export async function getLibro(id) {
   }
 }
 
-export async function agregarLibro(libro) {
+export async function agregarLibro(libro, pdfFile = null) {
   try {
-    const res = await apiClient.post('/libros/', {
-      new_titulo: libro.titulo,
-      new_isbn: libro.isbn,
-      new_id_autor: libro.id_autor,
-      new_id_carrera: libro.id_carrera,
-      new_estado: libro.estado,
-      new_anio_publicacion: libro.anio_publicacion,
+    const formData = new FormData()
+
+    formData.append('new_titulo', libro.titulo)
+    formData.append('new_isbn', libro.isbn)
+    formData.append('new_estado', libro.estado)
+    formData.append('new_anio_publicacion', libro.anio_publicacion)
+
+    if (libro.ids_autores && libro.ids_autores.length > 0) {
+      libro.ids_autores.forEach((id) => {
+        formData.append('new_id_autor', id) // Múltiples valores con mismo key
+      })
+    }
+
+    if (libro.ids_carreras && libro.ids_carreras.length > 0) {
+      libro.ids_carreras.forEach((id) => {
+        formData.append('new_id_carrera', id)
+      })
+    }
+
+    if (pdfFile) {
+      formData.append('pdf', pdfFile)
+    }
+
+    // Si no se proporciona el título, intentar obtenerlo desde Google Books
+    if (!libro.titulo && libro.isbn) {
+      const googleData = await buscarIsbn(libro.isbn)
+      if (googleData && googleData.title) {
+        formData.set('new_titulo', googleData.title)
+      }
+    }
+
+    const res = await apiClient.post('/libros/', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
     })
+
     return res.data
   } catch (err) {
     console.error('Error agregando libro:', err)
@@ -49,15 +86,35 @@ export async function agregarLibro(libro) {
   }
 }
 
-export async function actualizarLibro(id, libro) {
+export async function actualizarLibro(id, libro, pdfFile = null) {
   try {
-    const res = await apiClient.put(`/libros/${id}`, {
-      edit_titulo: libro.titulo,
-      edit_isbn: libro.isbn,
-      edit_id_autor: libro.id_autor,
-      edit_id_carrera: libro.id_carrera,
-      edit_estado: libro.estado,
-      edit_anio_publicacion: libro.anio_publicacion,
+    const formData = new FormData()
+
+    formData.append('edit_titulo', libro.titulo)
+    formData.append('edit_isbn', libro.isbn)
+    formData.append('edit_estado', libro.estado)
+    formData.append('edit_anio_publicacion', libro.anio_publicacion)
+
+    if (libro.ids_autores && libro.ids_autores.length > 0) {
+      libro.ids_autores.forEach((id) => {
+        formData.append('edit_id_autor', id)
+      })
+    }
+
+    if (libro.ids_carreras && libro.ids_carreras.length > 0) {
+      libro.ids_carreras.forEach((id) => {
+        formData.append('edit_id_carrera', id)
+      })
+    }
+
+    if (pdfFile) {
+      formData.append('pdf', pdfFile)
+    }
+
+    const res = await apiClient.put(`/libros/${id}`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
     })
     return res.data
   } catch (err) {

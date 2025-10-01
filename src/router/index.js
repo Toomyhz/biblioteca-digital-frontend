@@ -59,7 +59,7 @@ const router = createRouter({
       children: [
         {
           path: 'libros',
-          component: () => import('../components/admin/AdminListarLibros.vue'),
+          component: () => import('../components/admin/AdminLibros.vue'),
         },
         {
           path: 'agregar-libro',
@@ -67,11 +67,11 @@ const router = createRouter({
         },
         {
           path: 'agregar-autor',
-          component: () => import('../components/admin/AdminAgregarAutores.vue'),
+          component: () => import('../components/admin/AdminAutores.vue'),
         },
         {
           path: 'agregar-carrera',
-          component: () => import('../components/admin/AdminAgregarCarreras.vue'),
+          component: () => import('../components/admin/AdminCarreras.vue'),
         },
       ],
     },

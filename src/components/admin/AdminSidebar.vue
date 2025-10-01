@@ -6,24 +6,19 @@
       </div>
       <div>
         <RouterLink
-          to="/admin-biblioteca/agregar-libro"
-          class="block p-2 rounded border border-blue-800 hover:bg-blue-800 hover:border-white transition duration-200 ease-in-out"
-          >Agregar Libro</RouterLink
-        >
-        <RouterLink
           to="/admin-biblioteca/libros"
           class="block p-2 rounded border border-blue-800 hover:bg-blue-800 hover:border-white transition duration-200 ease-in-out"
-          >Ver Libros</RouterLink
+          >Gestionar Libros</RouterLink
         >
         <RouterLink
           to="/admin-biblioteca/agregar-autor"
           class="block p-2 rounded border border-blue-800 hover:bg-blue-800 hover:border-white transition duration-200 ease-in-out"
-          >Autores</RouterLink
+          >Gestionar Autores</RouterLink
         >
         <RouterLink
           to="/admin-biblioteca/agregar-carrera"
           class="block p-2 rounded border border-blue-800 hover:bg-blue-800 hover:border-white transition duration-200 ease-in-out"
-          >Carreras</RouterLink
+          >Gestionar Carreras</RouterLink
         >
       </div>
     </div>
