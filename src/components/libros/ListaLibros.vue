@@ -1,59 +1,62 @@
 <template>
   <main class="p-2">
-    <h2>Filtrando por {{ props.filtros }}</h2>
-    <h2>{{ librosPorPagina }}</h2>
+    <!-- Estado de carga -->
+    <div v-if="props.cargando" class="text-gray-500">Cargando libros...</div>
+    <div v-else-if="!props.libros.length" class="text-gray-500">No se encontraron libros</div>
 
-    <button @click="limpiarFiltros" class="cursor-pointer">Limpiar filtros</button>
-    <div v-if="cargando">Cargando libros...</div>
+    <!-- Grilla de libros -->
     <div v-else class="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
-      <div v-for="libro_servido in libros" :key="libro_servido.id">
+      <div v-for="libro in libros" :key="libro.id_libro">
         <div
-          class="text-xl bg-[#fff] text-[#000] rounded border-2 border-transparent hover:border-blue-800 hover:shadow-lg transition-all"
+          class="text-xl bg-white text-black rounded border-2 border-transparent hover:border-blue-800 hover:shadow-lg transition-all"
         >
-          <RouterLink
-            :to="`/info/${libro_servido.id}`"
-            class="flex flex-col items-center p-1 w-[100%]"
-          >
+          <RouterLink :to="`/info/${libro.id_libro}`" class="flex flex-col items-center p-1 w-full">
             <img
-              :src="libro_servido.portada ? libro_servido.portada : '/LIBRO_SIN_PORTADA.png'"
-              alt="Portada"
-              class="h-36 md:h-40 lg:h-64 rounded"
+              :src="libro.portada || '/LIBRO_SIN_PORTADA.png'"
+              :alt="`Portada de ${libro.titulo}`"
+              class="h-36 md:h-40 lg:h-64 rounded object-cover"
+              loading="lazy"
             />
-            <p class="text-sm md:text-base self-start line-clamp-2 md:line-clamp-2 h-10 md:h-12">
-              {{ libro_servido.titulo }}
+            <p class="text-sm md:text-base self-start line-clamp-2 h-10 md:h-12">
+              {{ libro.titulo }}
             </p>
           </RouterLink>
         </div>
       </div>
     </div>
+
+    <!-- Controles de paginación -->
     <div class="flex gap-4 mt-4">
-      <div class="flex items-center gap-2 border rounded">
+      <!-- Navegación -->
+      <div v-if="paginacion.total_paginas > 1" class="flex items-center gap-2 border rounded px-2">
         <button
-          @click="paginaActual--"
-          :disabled="paginaActual === 1"
-          class="p-1 bg-blue-950 text-white transition-all duration-200 ease-in-out hover:bg-blue-900"
+          @click="emit('cambiarPagina', paginacion.pagina - 1)"
+          :disabled="paginacion.pagina === 1"
+          class="p-1 px-2 bg-blue-950 text-white transition-all duration-200 hover:bg-blue-900 disabled:bg-gray-400 disabled:cursor-not-allowed"
         >
           Anterior
         </button>
-        <span>Página {{ paginaActual }}</span>
+        <span>Página {{ props.paginacion.pagina }} / {{ props.paginacion.total_paginas }}</span>
         <button
-          @click="paginaActual++"
-          :disabled="libros.length < librosPorPagina"
-          :class="{
-            'p-1 bg-blue-950 text-white transition-all duration-200 ease-in-out hover:bg-blue-900': true,
-            'bg-gray-400 opacity-50 cursor-not-allowed hover:bg-gray-400':
-              libros.length < librosPorPagina,
-          }"
+          @click="emit('cambiarPagina', paginacion.pagina + 1)"
+          :disabled="paginacion.pagina === paginacion.total_paginas"
+          class="p-1 px-2 bg-blue-950 text-white transition-all duration-200 hover:bg-blue-900 disabled:bg-gray-400 disabled:cursor-not-allowed"
         >
           Siguiente
         </button>
       </div>
-      <div class="flex border rounded">
-        <span class="p-1">Libros por página:</span>
-        <select v-model="librosPorPagina">
-          <option value="10">10</option>
-          <option value="20">20</option>
-          <option value="50">50</option>
+
+      <!-- Selector de límite -->
+      <div class="flex items-center border rounded px-2">
+        <span class="mr-2">Libros por página:</span>
+        <select
+          :value="paginacion.limite"
+          @change="emit('cambiarLimite', Number($event.target.value))"
+          class="border rounded px-1"
+        >
+          <option :value="10">10</option>
+          <option :value="20">20</option>
+          <option :value="50">50</option>
         </select>
       </div>
     </div>
@@ -61,62 +64,20 @@
 </template>
 
 <script setup>
-import { ref, watch, toRaw, onMounted } from 'vue'
-import { getLibros } from '@/data/api'
-
 const props = defineProps({
-  filtros: {
+  libros: {
+    type: Array,
+    required: true,
+  },
+  paginacion: {
     type: Object,
     required: true,
   },
-})
-
-const paginaActual = ref(1)
-const librosPorPagina = ref(10)
-
-const libros = ref([])
-const cargando = ref(false)
-
-const actualizarLibros = async () => {
-  cargando.value = true
-  const filtros = toRaw(props.filtros)
-
-  try {
-    const respuesta = await getLibros({
-      page: paginaActual.value,
-      limit: librosPorPagina.value,
-      filtros: filtros,
-    })
-
-    libros.value = respuesta.data || respuesta.libros || respuesta.results || []
-  } catch (error) {
-    console.error('Error obteniendo libros:', error)
-  } finally {
-    cargando.value = false
-  }
-}
-
-onMounted(() => {
-  actualizarLibros()
-})
-
-watch(
-  () => props.filtros,
-  () => {
-    paginaActual.value = 1 // Reiniciar paginación al cambiar filtros
-    libros.value = []
-    actualizarLibros()
+  cargando: {
+    type: Boolean,
+    default: false,
   },
-  { deep: true },
-)
+})
 
-watch(paginaActual, () => {
-  libros.value = []
-  actualizarLibros()
-})
-watch(librosPorPagina, () => {
-  paginaActual.value = 1
-  libros.value = []
-  actualizarLibros()
-})
+const emit = defineEmits(['cambiarPagina', 'cambiarLimite'])
 </script>

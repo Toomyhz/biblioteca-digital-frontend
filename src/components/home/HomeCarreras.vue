@@ -69,7 +69,6 @@
 import { ref, onMounted } from 'vue'
 import { Swiper, SwiperSlide } from 'swiper/vue'
 import { Navigation, Autoplay } from 'swiper/modules'
-import { getLibros } from '@/data/api.js'
 
 import 'swiper/css'
 import 'swiper/css/navigation'
@@ -84,10 +83,6 @@ const props = defineProps({
 const libros_servidos = ref([])
 
 onMounted(() => {
-  libros_servidos.value = getLibros({
-    page: 1,
-    limit: 12,
-    filtros: { carreras: [props.carrera.id] },
-  })
+  libros_servidos.value = props.carrera.libros
 })
 </script>

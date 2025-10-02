@@ -24,8 +24,6 @@
         <div class="border rounded p-1 md:border-0 md:p-0">
           <div class="flex justify-between items-center border-b-1">
             <p class="text-lg">Carreras</p>
-
-            <p>{{}}</p>
             <button @click="mostrarCarreras = !mostrarCarreras">Mostrar</button>
           </div>
           <ul
@@ -44,6 +42,7 @@
                 :id="`carrera_${carrera.id_carrera}`"
                 type="checkbox"
                 :value="carrera.id_carrera"
+                v-model="filtrosLocal.carreras"
                 class="accent-blue-600 w-4 h-4 rounded-full border-gray-300"
               />
               <label
@@ -51,6 +50,10 @@
                 class="flex justify-between items-center w-full cursor-pointer"
               >
                 <span>{{ carrera.nombre_carrera }}</span>
+                <span
+                  class="flex w-7 h-7 text-xs text-gray-400 border rounded-full justify-center items-center"
+                  >{{ carrera.total_libros < 99 ? carrera.total_libros : '99+' }}</span
+                >
               </label>
             </li>
           </ul>
@@ -76,7 +79,7 @@
             /> -->
             <ul>
               <li
-                v-for="autor in filteredAutores"
+                v-for="autor in autores"
                 :key="autor.id_autor"
                 class="flex justify-between items-center h-8 hover:bg-blue-700 cursor-pointer"
               >
@@ -92,6 +95,10 @@
                   class="flex justify-between items-center w-full cursor-pointer"
                 >
                   <span>{{ autor.nombre_completo }}</span>
+                  <span
+                    class="flex w-7 h-7 text-xs text-gray-400 border rounded-full justify-center items-center"
+                    >{{ autor.total_libros < 99 ? autor.total_libros : '99+' }}</span
+                  >
                 </label>
               </li>
             </ul>
@@ -102,84 +109,33 @@
   </div>
 </template>
 <script setup>
-import { ref, onMounted, watch, watchEffect } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { getCarreras, getAutores } from '@/data/api'
+import { ref, watch } from 'vue'
 
 const props = defineProps({
-  filtros: {
-    type: Object,
-    required: true,
+  filtros: Object,
+  carreras: Array,
+  autores: Array,
+})
+
+const emit = defineEmits(['updateFiltros'])
+
+const filtrosLocal = ref({
+  carreras: props.filtros.carreras ?? [],
+  autores: props.filtros.autores ?? [],
+  busqueda: props.filtros.busqueda ?? '',
+})
+
+watch(
+  filtrosLocal,
+  (val) => {
+    emit('updateFiltros', val)
   },
-})
-
-const route = useRoute()
-const router = useRouter()
-const carreras = ref([])
-const autores = ref([])
-
-onMounted(async () => {
-  autores.value = await getAutores()
-  carreras.value = await getCarreras()
-})
-
-// =====Carreras=====
-const carrerasSeleccionadas = ref([])
-// onMounted(() => {
-//   if (route.query.carrera) {
-//     carrerasSeleccionadas.value = route.query.carrera.split(',')
-//   }
-// })
-
-watch(carrerasSeleccionadas, (newValue) => {
-  const query = {
-    ...route.query,
-  }
-
-  if (newValue.length > 0) {
-    query.carrera = newValue.join(',')
-  } else {
-    delete query.carrera
-  }
-  router.replace({ path: '/biblioteca', query })
-})
+  { deep: true },
+)
 
 const mostrarCarreras = ref(true)
-
-// =====Autores=====
-const autoresSeleccionados = ref([])
-
-// onMounted(() => {
-//   if (route.query.autor) {
-//     autoresSeleccionados.value = route.query.autor.split(',')
-//   }
-// })
-watch(autoresSeleccionados, (newValue) => {
-  const query = {
-    ...route.query,
-  }
-
-  if (newValue.length > 0) {
-    query.autor = newValue.join(',')
-  } else {
-    delete query.autor
-  }
-  router.replace({ path: '/biblioteca', query })
-})
-
-// Variable para el buscador de autores
-// const buscadorAutor = ref('')
-
-const filteredAutores = autores
-
 const mostrarAutores = ref(true)
-
-watchEffect(() => {
-  if (route.query.busqueda) {
-    carrerasSeleccionadas.value = [] // Borra selección cuando hay búsqueda activa
-    autoresSeleccionados.value = []
-  }
-})
-
 const panelAbierto = ref(false)
+
+console.log(props.autores)
 </script>

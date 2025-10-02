@@ -7,12 +7,12 @@
 </template>
 <script setup>
 import HomeCarreras from './HomeCarreras.vue'
-import { getCarreras } from '@/data/api.js'
+import { getCarrerasHome } from '@/data/api.js'
 import { ref, onMounted } from 'vue'
 const carreras = ref([])
 
 const fetchCarreras = async () => {
-  carreras.value = await getCarreras()
+  carreras.value = await getCarrerasHome()
 }
 onMounted(fetchCarreras)
 </script>

@@ -245,3 +245,42 @@ export async function eliminarCarrera(id) {
     throw err
   }
 }
+
+// ==================== CARRERAS ====================
+export async function getCarrerasHome() {
+  try {
+    const resp = await apiClient.get('/libros/home/')
+    return resp.data
+  } catch (err) {
+    console.error('Error en getCarrerasHome', err)
+    throw err
+  }
+}
+
+//=================== BIBLIOTECA ====================
+export const getBiblioteca = async ({ pagina = 1, limite = 10, filtros = {} }) => {
+  const params = {
+    pagina,
+    limite,
+  }
+
+  if (filtros.carreras?.length) {
+    params.carrera = filtros.carreras.join(',')
+  }
+
+  if (filtros.autores?.length) {
+    params.autor = filtros.autores.join(',')
+  }
+
+  if (filtros.busqueda) {
+    params.busqueda = filtros.busqueda
+  }
+
+  try {
+    const resp = await apiClient.get('/biblioteca/', { params })
+    return resp.data
+  } catch (err) {
+    console.error('Error en getBiblitoeca', err)
+    throw err
+  }
+}
