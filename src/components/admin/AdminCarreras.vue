@@ -76,7 +76,7 @@
       </li>
     </ul>
     <p v-else class="text-gray-500 italic text-center py-8 bg-gray-50 rounded">
-      No hay carreras registradas
+      {{ cargando ? 'Cargando carreras...' : 'No hay carreras disponibles.' }}
     </p>
 
     <!-- Modal -->
@@ -137,11 +137,14 @@ const mostrarModalEliminar = ref(false)
 const carreraAEliminar = ref(null)
 
 const cargarCarreras = async () => {
+  cargando.value = true
   try {
     carreras.value = await getCarreras()
   } catch (err) {
     console.error('Error cargando carreras:', err)
     mostrarMensaje('Error al cargar la lista de carreras', 'error')
+  } finally {
+    cargando.value = false
   }
 }
 

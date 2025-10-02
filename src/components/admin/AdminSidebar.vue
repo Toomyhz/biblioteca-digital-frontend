@@ -11,12 +11,12 @@
           >Gestionar Libros</RouterLink
         >
         <RouterLink
-          to="/admin-biblioteca/agregar-autor"
+          to="/admin-biblioteca/autores"
           class="block p-2 rounded border border-blue-800 hover:bg-blue-800 hover:border-white transition duration-200 ease-in-out"
           >Gestionar Autores</RouterLink
         >
         <RouterLink
-          to="/admin-biblioteca/agregar-carrera"
+          to="/admin-biblioteca/carreras"
           class="block p-2 rounded border border-blue-800 hover:bg-blue-800 hover:border-white transition duration-200 ease-in-out"
           >Gestionar Carreras</RouterLink
         >

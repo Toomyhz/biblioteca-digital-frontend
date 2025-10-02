@@ -84,7 +84,7 @@
       </li>
     </ul>
     <p v-else class="text-gray-500 italic text-center py-8 bg-gray-50 rounded">
-      No hay autores registrados
+      {{ cargando ? 'Cargando autores...' : 'No hay autores disponibles.' }}
     </p>
 
     <!-- Modal -->
@@ -143,11 +143,14 @@ const mostrarModalEliminar = ref(false)
 const autorAEliminar = ref(null)
 
 const cargarAutores = async () => {
+  cargando.value = true
   try {
     autores.value = await getAutores()
   } catch (err) {
     console.error('Error cargando autores:', err)
     mostrarMensaje('Error al cargar la lista de autores', 'error')
+  } finally {
+    cargando.value = false
   }
 }
 

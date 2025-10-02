@@ -140,12 +140,22 @@
 
     <!-- Buscador -->
     <div class="mb-4">
-      <input
-        v-model="busqueda"
-        type="text"
-        placeholder="Buscar por título, autor o ISBN..."
-        class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
-      />
+      <div class="relative">
+        <input
+          v-model="busqueda"
+          type="text"
+          placeholder="Buscar por título, autor o ISBN..."
+          class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+        />
+        <button
+          v-if="busqueda"
+          @click="busqueda = ''"
+          type="button"
+          class="absolute inset-y-0 right-2 flex items-center text-gray-400 hover:text-gray-600"
+        >
+          Borrar
+        </button>
+      </div>
       <p v-if="cargando" class="text-sm text-gray-500 mt-1">Buscando...</p>
     </div>
 
@@ -233,7 +243,7 @@
         </tbody>
       </table>
       <p v-else class="text-gray-500 italic text-center py-8 bg-gray-50 rounded">
-        {{ cargando ? 'Cargando libros...' : 'No hay libros registrados' }}
+        {{ cargando ? 'Cargando libros...' : 'No hay libros registrados.' }}
       </p>
     </div>
 
@@ -256,6 +266,14 @@
       >
         Siguiente
       </button>
+      <div class="flex border rounded">
+        <span class="p-1">Libros por página:</span>
+        <select v-model="librosPorPagina">
+          <option value="10">10</option>
+          <option value="20">20</option>
+          <option value="50">50</option>
+        </select>
+      </div>
     </div>
 
     <!-- Modal -->
@@ -326,7 +344,7 @@ const libroAEliminar = ref(null)
 
 const busqueda = ref('')
 const paginaActual = ref(1)
-const librosPorPagina = 10
+const librosPorPagina = ref(10)
 const totalLibros = ref(0)
 const totalPaginas = ref(0)
 
@@ -351,7 +369,7 @@ const cargarLibros = async () => {
   try {
     const response = await getLibros({
       page: paginaActual.value,
-      limit: librosPorPagina,
+      limit: librosPorPagina.value,
       search: busqueda.value,
     })
     libros.value = response.data
@@ -496,6 +514,12 @@ const mostrarMensaje = (texto, tipo = 'info') => {
 }
 
 watch(paginaActual, () => {
+  cargarLibros()
+})
+
+watch(librosPorPagina, () => {
+  paginaActual.value = 1
+  libros.value = []
   cargarLibros()
 })
 

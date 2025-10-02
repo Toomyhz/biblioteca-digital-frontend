@@ -2,10 +2,10 @@
   <div class="px-10 lg:px-20 text-blue-800 py-5">
     <div class="flex justify-between items-center p-4">
       <h2 class="text-2xl">
-        <strong>Libros de la carrera: {{ carrera.nombre }}</strong>
+        <strong>Libros de la carrera: {{ carrera.nombre_carrera }}</strong>
       </h2>
       <router-link
-        :to="{ path: '/biblioteca', query: { carrera: carrera.id } }"
+        :to="{ path: '/biblioteca', query: { carrera: carrera.id_carrera } }"
         class="text-white bg-blue-950 hover:bg-blue-800 transition-all duration-200 ease-in-out px-4 py-2 rounded"
         >Ver todos</router-link
       >
@@ -13,7 +13,7 @@
     <div class="relative">
       <div class="absolute left-0 top-1/2 z-10 -translate-y-1/2 hidden lg:block">
         <button
-          :class="`swiper-button-prev-${carrera.id}`"
+          :class="`swiper-button-prev-${carrera.id_carrera}`"
           class="text-2xl px-4 py-2 h-30 hover:bg-gray-100 text-black opacity-50"
         >
           ◀
@@ -21,7 +21,7 @@
       </div>
       <div class="absolute right-0 top-1/2 z-10 -translate-y-1/2 hidden lg:block">
         <button
-          :class="`swiper-button-next-${carrera.id}`"
+          :class="`swiper-button-next-${carrera.id_carrera}`"
           class="text-2xl px-4 py-2 h-30 hover:bg-gray-100 text-black opacity-50"
         >
           ▶
@@ -30,8 +30,8 @@
       <Swiper
         :modules="[Navigation, Autoplay]"
         :navigation="{
-          nextEl: `.swiper-button-next-${carrera.id}`,
-          prevEl: `.swiper-button-prev-${carrera.id}`,
+          nextEl: `.swiper-button-next-${carrera.id_carrera}`,
+          prevEl: `.swiper-button-prev-${carrera.id_carrera}`,
         }"
         :breakpoints="{
           0: { slidesPerView: 3, spaceBetween: 10 },
