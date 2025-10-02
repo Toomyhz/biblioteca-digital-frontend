@@ -59,11 +59,15 @@ const router = createRouter({
       children: [
         {
           path: 'libros',
-          component: () => import('../components/admin/AdminListarLibros.vue'),
+          component: () => import('../components/admin/AdminLibros.vue'),
         },
         {
-          path: 'agregar-libro',
-          component: () => import('../components/admin/AdminAgregarLibro.vue'),
+          path: 'autores',
+          component: () => import('../components/admin/AdminAutores.vue'),
+        },
+        {
+          path: 'carreras',
+          component: () => import('../components/admin/AdminCarreras.vue'),
         },
       ],
     },

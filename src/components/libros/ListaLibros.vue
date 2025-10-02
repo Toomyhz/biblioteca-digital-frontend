@@ -1,6 +1,8 @@
 <template>
   <main class="p-2">
     <h2>Filtrando por {{ props.filtros }}</h2>
+    <h2>{{ librosPorPagina }}</h2>
+
     <button @click="limpiarFiltros" class="cursor-pointer">Limpiar filtros</button>
     <div v-if="cargando">Cargando libros...</div>
     <div v-else class="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
@@ -75,20 +77,18 @@ const librosPorPagina = ref(10)
 const libros = ref([])
 const cargando = ref(false)
 
-onMounted(() => {
-  actualizarLibros()
-})
-
 const actualizarLibros = async () => {
   cargando.value = true
   const filtros = toRaw(props.filtros)
 
   try {
-    libros.value = getLibros({
+    const respuesta = await getLibros({
       page: paginaActual.value,
       limit: librosPorPagina.value,
       filtros: filtros,
     })
+
+    libros.value = respuesta.data || respuesta.libros || respuesta.results || []
   } catch (error) {
     console.error('Error obteniendo libros:', error)
   } finally {
@@ -96,6 +96,9 @@ const actualizarLibros = async () => {
   }
 }
 
+onMounted(() => {
+  actualizarLibros()
+})
 
 watch(
   () => props.filtros,
