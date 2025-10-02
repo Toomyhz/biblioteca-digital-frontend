@@ -4,7 +4,6 @@ import { useAuthStore } from '@/stores/auth'
 // import HomeView from '../views/HomeView.vue'
 import LoginView from '@/views/LoginView.vue'
 import NotFound from '@/views/NotFound.vue'
-import LoginCallback from '@/views/LoginCallback.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -19,11 +18,7 @@ const router = createRouter({
       name: 'authSuccess',
       component: () => import('@/views/AuthSuccessView.vue'),
     },
-    {
-      path: '/login/callback',
-      name: 'loginCallback',
-      component: LoginCallback,
-    },
+
     {
       path: '/',
       name: 'home',
@@ -37,16 +32,10 @@ const router = createRouter({
       name: 'biblioteca',
       component: () => import('../views/BibliotecaVista.vue'),
     },
-    // ✅ PRUEBA: Usar ruta relativa exacta como las otras
-    {
-      path: '/lector/:archivo',
-      name: 'lector',
-      component: () => import('../views/LectorPdfVista.vue'),
-    },
     {
       path: '/test-lector',
       name: 'test-lector',
-      component: () => import('../views/testLector.vue'),
+      component: () => import('../views/LectorVista.vue'),
     },
     {
       path: '/admin-biblioteca',
@@ -70,11 +59,6 @@ const router = createRouter({
           component: () => import('../components/admin/AdminCarreras.vue'),
         },
       ],
-    },
-    {
-      path: '/info/:id',
-      name: 'info',
-      component: () => import('../views/InfoLibroVista.vue'),
     },
     {
       path: '/:pathMatch(.*)*',
