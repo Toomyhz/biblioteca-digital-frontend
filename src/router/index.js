@@ -1,7 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
-// import HomeView from '../views/HomeView.vue'
 import LoginView from '@/views/LoginView.vue'
 import NotFound from '@/views/NotFound.vue'
 
@@ -73,30 +72,21 @@ const router = createRouter({
 router.beforeEach(async (to, from, next) => {
   const auth = useAuthStore()
 
-  // Inicializar store si no lo está
-  if (!auth.initialized) {
+  if (!auth.hasFetched) {
     await auth.fetchUser()
   }
 
   // Evita quedarse en /login si ya está autenticado
-  if (to.path === '/login' && auth.isAuthenticated) {
-    return next('/')
-  }
-
-  // Revalida usuario
-  if (!auth.user) {
-    await auth.fetchUser()
-  }
+  if (to.path === '/login' && auth.isAuthenticated) return next('/')
 
   if (to.meta.requiresAuth) {
-    if (!auth.isAuthenticated) {
-      return next('/login')
-    }
+    if (!auth.isAuthenticated) return next('/login')
+
+    // Validación de roles
     if (to.meta.roles && (!auth.user || !to.meta.roles.includes(auth.user.rol))) {
       return next('/not-found')
     }
   }
-
   next()
 })
 

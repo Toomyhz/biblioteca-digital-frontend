@@ -1,29 +1,35 @@
 <template>
-  <main class="p-2">
+  <main class="p-2 transition-all duration-300 border border-gray-400 rounded">
     <!-- Estado de carga -->
     <div v-if="props.cargando" class="text-gray-500">Cargando libros...</div>
     <div v-else-if="!props.libros.length" class="text-gray-500">No se encontraron libros</div>
 
-    <!-- Grilla de libros -->
-    <div v-else class="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
-      <div v-for="libro in libros" :key="libro.id_libro">
+    <!-- Lista de libros -->
+    <ul v-else class="flex flex-col gap-2">
+      <li v-for="libro in props.libros" :key="libro.id_libro">
         <div
-          class="text-xl bg-white text-black rounded border-2 border-transparent hover:border-blue-800 hover:shadow-lg transition-all"
+          class="flex items-center gap-4 bg-white text-black rounded border-2 border-transparent hover:border-blue-800 hover:shadow-lg transition-all p-2"
         >
-          <RouterLink :to="`/info/${libro.id_libro}`" class="flex flex-col items-center p-1 w-full">
+          <RouterLink :to="`/info/${libro.id_libro}`" class="flex items-center gap-4 w-full">
             <img
               :src="libro.portada || '/LIBRO_SIN_PORTADA.png'"
               :alt="`Portada de ${libro.titulo}`"
-              class="h-36 md:h-40 lg:h-64 rounded object-cover"
+              class="h-24 md:h-28 lg:h-32 rounded object-cover flex-shrink-0"
               loading="lazy"
             />
-            <p class="text-sm md:text-base self-start line-clamp-2 h-10 md:h-12">
-              {{ libro.titulo }}
-            </p>
+            <div class="flex flex-col">
+              <p class="text-base font-semibold line-clamp-2">
+                {{ libro.titulo }}
+              </p>
+              <p class="text-sm text-gray-600 mt-1">
+                <!-- Aquí puedes agregar autor, carrera u otra info -->
+                {{ libro.autor || 'Autor desconocido' }}
+              </p>
+            </div>
           </RouterLink>
         </div>
-      </div>
-    </div>
+      </li>
+    </ul>
 
     <!-- Controles de paginación -->
     <div class="flex gap-4 mt-4">

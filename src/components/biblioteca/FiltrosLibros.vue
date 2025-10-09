@@ -18,7 +18,7 @@
       <div class="bg-blue-950 text-white p-2 lg:block rounded-xl">
         <div class="flex justify-center items-center">
           <p class="text-lg">Filtros</p>
-          <button v-if="props.filtros">Limpiar Filtros</button>
+          <button v-if="filtrosActivos" @click="limpiarFiltros">Limpiar Filtros</button>
         </div>
         <!-- CARRERAS -->
         <div class="border rounded p-1 md:border-0 md:p-0">
@@ -109,7 +109,7 @@
   </div>
 </template>
 <script setup>
-import { ref, watch } from 'vue'
+import { ref, watch, computed } from 'vue'
 
 const props = defineProps({
   filtros: Object,
@@ -138,4 +138,19 @@ const mostrarAutores = ref(true)
 const panelAbierto = ref(false)
 
 console.log(props.autores)
+
+function limpiarFiltros() {
+  filtrosLocal.value = {
+    carreras: [],
+    autores: [],
+    busqueda: '',
+  }
+}
+const filtrosActivos = computed(() => {
+  return (
+    filtrosLocal.value.carreras.length > 0 ||
+    filtrosLocal.value.autores.length > 0 ||
+    filtrosLocal.value.busqueda
+  )
+})
 </script>

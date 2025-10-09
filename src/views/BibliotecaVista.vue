@@ -1,27 +1,52 @@
-<template class="h-full">
-  <div class="flex">
-    <FiltrosLibros
-      :carreras="carreras"
-      :autores="autores"
-      :filtros="filtros"
-      class="lg:w-1/4"
-      @update-filtros="onUpdateFiltros"
-    />
-    <ListaLibros
-      :libros="libros"
-      :paginacion="paginacion"
-      @cambiarPagina="(nuevaPagina) => actualizarPagina(nuevaPagina)"
-      @cambiarLimite="(nuevoLimite) => actualizarLimite(nuevoLimite)"
-      class="lg:w-3/4"
-    />
+<template>
+  <div class="max-w-3/4 mx-auto flex flex-col">
+    <!-- Buscador arriba -->
+    <BuscadorLibros />
+
+    <!-- Botón de filtros arriba -->
+    <div class="mb-4">
+      <button @click="toggleFiltros" class="px-4 py-2 bg-gray-300 rounded">
+        {{ showFiltros ? 'Ocultar filtros' : 'Mostrar filtros' }}
+      </button>
+    </div>
+
+    <!-- Contenedor principal: sidebar + listado -->
+    <div class="flex flex-1">
+      <!-- Sidebar lateral -->
+      <SidebarFiltros
+        v-model:visible="showFiltros"
+        @limpiar="limpiarFiltros"
+        :carreras="carreras"
+        :autores="autores"
+        :filtros="filtros"
+        @update-filtros="onUpdateFiltros"
+        class="h-full"
+      />
+      <!-- <NuevosFiltros
+        :carreras="carreras"
+        :autores="autores"
+        :filtros="filtros"
+        @update-filtros="onUpdateFiltros"
+      /> -->
+      <!-- Listado ocupa todo el resto -->
+      <div class="flex-1 p-4 overflow-auto">
+        <ListaLibros
+          :libros="libros"
+          :paginacion="paginacion"
+          @cambiarPagina="(nuevaPagina) => actualizarPagina(nuevaPagina)"
+          @cambiarLimite="(nuevoLimite) => actualizarLimite(nuevoLimite)"
+        />
+      </div>
+    </div>
   </div>
 </template>
 <script setup>
 import { ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getBiblioteca } from '@/data/api'
-import FiltrosLibros from '@/components/libros/FiltrosLibros.vue'
-import ListaLibros from '@/components/libros/ListaLibros.vue'
+import BuscadorLibros from '@/components/biblioteca/BuscadorLibros.vue'
+import ListaLibros from '@/components/biblioteca/ListaLibros.vue'
+import SidebarFiltros from '@/components/biblioteca/SidebarFiltros.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -86,4 +111,13 @@ watch(
   },
   { immediate: true },
 )
+
+const showFiltros = ref(false)
+const filtroNombre = ref('')
+function toggleFiltros() {
+  showFiltros.value = !showFiltros.value
+}
+function limpiarFiltros() {
+  filtroNombre.value = ''
+}
 </script>

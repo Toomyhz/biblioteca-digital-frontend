@@ -8,19 +8,7 @@
           ><img src="/LogoUMCE-f-blanco-H.png" alt="Logo-Umce" class="h-16"
         /></router-link>
       </div>
-      <div class="flex items-center justify-between">
-        <div>
-          <input
-            v-model="buscadorLibros"
-            type="text"
-            name="buscador-libros"
-            id="buscador-libros"
-            class="bg-gray-100 text-gray-900 rounded-full p-2 w-60 lg:w-96"
-            placeholder="Ingrese un libro a buscar.."
-            @keydown.enter="buscarLibro"
-          />
-        </div>
-      </div>
+
       <div>
         <div class="pt-3 lg:pt-0">
           <nav>
@@ -51,20 +39,4 @@
 </template>
 <script setup>
 import DropdownPerfil from './navbar/DropdownPerfil.vue'
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
-const buscadorLibros = ref('')
-const router = useRouter()
-
-const buscarLibro = () => {
-  // Evitar la búsqueda si el campo está vacío
-  if (buscadorLibros.value.trim() === '') {
-    router.push({ path: '/biblioteca' })
-  } else {
-    const query = buscadorLibros.value.trim()
-    if (query) {
-      router.push({ path: '/biblioteca', query: { busqueda: query } })
-    }
-  }
-}
 </script>
