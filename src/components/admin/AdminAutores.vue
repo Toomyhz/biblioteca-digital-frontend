@@ -51,6 +51,12 @@
     </p>
 
     <h4 class="mt-8 mb-4 text-lg font-semibold text-gray-700">Autores ({{ autores.length }})</h4>
+    <input
+      v-model="busqueda_autor"
+      placeholder="Buscar autor"
+      @keyup="cargarAutores"
+      class="flex-1 min-w-[200px] px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-green-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+    />
 
     <ul v-if="autores.length > 0" class="divide-y divide-gray-200">
       <li
@@ -141,11 +147,12 @@ const modoEdicion = ref(false)
 const autorEditando = ref(null)
 const mostrarModalEliminar = ref(false)
 const autorAEliminar = ref(null)
+const busqueda_autor = ref('')
 
 const cargarAutores = async () => {
   cargando.value = true
   try {
-    autores.value = await getAutores()
+    autores.value = await getAutores(busqueda_autor.value)
   } catch (err) {
     console.error('Error cargando autores:', err)
     mostrarMensaje('Error al cargar la lista de autores', 'error')

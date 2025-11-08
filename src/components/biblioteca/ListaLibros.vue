@@ -2,7 +2,7 @@
   <main class="p-2 transition-all duration-300 border border-gray-400 rounded">
     <!-- Estado de carga -->
     <div v-if="props.cargando" class="text-gray-500">Cargando libros...</div>
-    <div v-else-if="!props.libros.length" class="text-gray-500">No se encontraron libros</div>
+    <div v-else-if="!props.libros?.length" class="text-gray-500">No se encontraron libros</div>
 
     <!-- Lista de libros -->
     <ul v-else class="flex flex-col gap-2">

@@ -29,7 +29,7 @@
       </li>
 
       <li v-if="esAdmin" role="menuitem" class="px-4 py-2 hover:bg-gray-100">
-        <router-link to="/admin-biblioteca" class="block w-full text-left"
+        <router-link to="/admin-biblioteca/libros" class="block w-full text-left"
           >Administrador</router-link
         >
       </li>

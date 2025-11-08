@@ -1,9 +1,10 @@
 <template>
-  <div class="h-100 bg-gray-600">
-    <div class="flex-col justify-center">
-      <h2 class="text-5xl text-center p-8"><b>Catálogo Digital</b></h2>
+  <div class="relative h-50 md:h-75 bg-[url('/biblioteca_header.webp')] bg-cover bg-center bg">
+    <div class="absolute inset-0 bg-blue-950/60"></div>
+    <div class="relative flex-col justify-center">
+      <h2 class="text-4xl md:text-5xl text-center p-8 text-white"><b>Catálogo Digital</b></h2>
       <div class="flex w-full justify-center">
-        <div class="relative w-2/5">
+        <div class="relative w-9/12 md:w-2/5">
           <input
             v-model="buscadorLibros"
             type="text"

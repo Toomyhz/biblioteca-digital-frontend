@@ -135,10 +135,11 @@ export async function eliminarLibro(id) {
 
 // ==================== AUTORES ====================
 
-export async function getAutores() {
+export async function getAutores(busqueda = '') {
   try {
-    const res = await apiClient.get('/autores/')
-    return res.data
+    const query = busqueda ? `?busqueda=${encodeURIComponent(busqueda)}` : ''
+    const { data } = await apiClient.get(`/autores${query}`)
+    return data
   } catch (err) {
     console.error('Error en getAutores:', err)
     throw err
@@ -157,8 +158,8 @@ export async function getAutor(id) {
 export async function agregarAutor(autor) {
   try {
     const res = await apiClient.post('/autores/', {
-      new_nombre: autor.nombre,
-      new_nacionalidad: autor.nacionalidad || '',
+      nombre_completo: autor.nombre,
+      nacionalidad: autor.nacionalidad || '',
     })
     return res.data
   } catch (err) {
@@ -170,8 +171,8 @@ export async function agregarAutor(autor) {
 export async function actualizarAutor(id, autor) {
   try {
     const res = await apiClient.put(`/autores/${id}`, {
-      edit_nombre: autor.nombre,
-      edit_nacionalidad: autor.nacionalidad,
+      nombre_completo: autor.nombre,
+      nacionalidad: autor.nacionalidad,
     })
     return res.data
   } catch (err) {

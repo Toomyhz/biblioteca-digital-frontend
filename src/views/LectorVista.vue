@@ -71,6 +71,7 @@
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf.mjs'
 import pdfjsWorker from 'pdfjs-dist/legacy/build/pdf.worker.mjs?url'
+import axios from 'axios'
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker
 
 const canvasEl = ref(null)
@@ -87,10 +88,20 @@ let mouseDown, mouseLeave, mouseUp, mouseMove
 let pdfDoc = null
 let currentRenderTask = null
 
+async function obtenerToken(libroId) {
+  const response = await axios.get(`/api/lector/token-libro/${libroId}`, { withCredentials: true })
+  return response.data.token
+}
+
 onMounted(async () => {
-  const url = 'http://localhost:5000/api/lector/libro/3'
+  const libroId = 3
+  const token = await obtenerToken(libroId)
+
+  const url = `http://localhost:5000/api/lector/libro/${libroId}?token=${token}`
+
   titulo_libro.value = 'Proximamente dinámico'
   pdfDoc = await pdfjsLib.getDocument({ url, withCredentials: true }).promise
+
   totalPages.value = pdfDoc.numPages
   renderPage(pageNum.value)
   viewer.value = pdfViewer.value

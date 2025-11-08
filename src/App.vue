@@ -10,5 +10,3 @@ const route = useRoute()
     <RouterView />
   </div>
 </template>
-
-<style scoped></style>

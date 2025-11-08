@@ -1,34 +1,29 @@
 <template>
-  <div class="max-w-3/4 mx-auto flex flex-col">
-    <!-- Buscador arriba -->
+  <div class="max-w-[80%] mx-auto flex flex-col">
+    <!-- 🔍 Buscador arriba -->
     <BuscadorLibros />
 
-    <!-- Botón de filtros arriba -->
+    <!-- Botón de filtros -->
     <div class="mb-4">
       <button @click="toggleFiltros" class="px-4 py-2 bg-gray-300 rounded">
         {{ showFiltros ? 'Ocultar filtros' : 'Mostrar filtros' }}
       </button>
     </div>
 
-    <!-- Contenedor principal: sidebar + listado -->
+    <!--  Contenedor principal -->
     <div class="flex flex-1">
       <!-- Sidebar lateral -->
       <SidebarFiltros
+        v-if="showFiltros"
         v-model:visible="showFiltros"
         @limpiar="limpiarFiltros"
         :carreras="carreras"
         :autores="autores"
         :filtros="filtros"
         @update-filtros="onUpdateFiltros"
-        class="h-full"
       />
-      <!-- <NuevosFiltros
-        :carreras="carreras"
-        :autores="autores"
-        :filtros="filtros"
-        @update-filtros="onUpdateFiltros"
-      /> -->
-      <!-- Listado ocupa todo el resto -->
+
+      <!--  Listado ocupa el resto -->
       <div class="flex-1 p-4 overflow-auto">
         <ListaLibros
           :libros="libros"
@@ -40,84 +35,121 @@
     </div>
   </div>
 </template>
+
 <script setup>
-import { ref, watch } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { getBiblioteca } from '@/data/api'
+
+// 🧩 Componentes
 import BuscadorLibros from '@/components/biblioteca/BuscadorLibros.vue'
 import ListaLibros from '@/components/biblioteca/ListaLibros.vue'
 import SidebarFiltros from '@/components/biblioteca/SidebarFiltros.vue'
 
-const route = useRoute()
-const router = useRouter()
+// 🌐 API
+import { getAutores, getCarreras, getBiblioteca } from '@/data/api'
 
+const router = useRouter()
+const route = useRoute()
+
+// 🧠 Estado reactivo
 const filtros = ref({
-  carreras: [],
-  autores: [],
-  busqueda: '',
+  autores: route.query.autor ? route.query.autor.split(',') : [],
+  carreras: route.query.carrera ? route.query.carrera.split(',') : [],
+  busqueda: route.query.busqueda || '',
 })
+
+const libros = ref([])
+const paginacion = ref({
+  pagina_actual: 1,
+  limite: 10,
+  total: 0,
+})
+const carreras = ref([])
+const autores = ref([])
+const showFiltros = ref(false)
+
+// 🚀 Cargar datos iniciales
+onMounted(async () => {
+  autores.value = await getAutores()
+  carreras.value = await getCarreras()
+  await fetchLibros()
+})
+
+//  Obtener libros desde API
+const fetchLibros = async () => {
+  try {
+    const data = await getBiblioteca({
+      pagina: paginacion.value.pagina_actual,
+      limite: paginacion.value.limite,
+      filtros: filtros.value,
+    })
+    libros.value = data.resultados || []
+    paginacion.value.total = data.total // <- viene del backend
+  } catch (err) {
+    console.error('Error al cargar libros:', err)
+  }
+}
+
+// 🔄 Cuando el Sidebar emite nuevos filtros
 const onUpdateFiltros = (val) => {
   if (JSON.stringify(filtros.value) === JSON.stringify(val)) return
 
   filtros.value = val
-  // Actualizar query params
+
+  // Actualizar query params en la URL
   router.replace({
-    path: '/biblioteca',
+    path: route.path,
     query: {
-      carrera: val.carreras && val.carreras.length ? val.carreras.join(',') : undefined,
-      autor: val.autores && val.autores.length ? val.autores.join(',') : undefined,
+      carrera: val.carreras?.length ? val.carreras.join(',') : undefined,
+      autor: val.autores?.length ? val.autores.join(',') : undefined,
       busqueda: val.busqueda || undefined,
       pagina: 1,
     },
   })
 }
 
-const libros = ref([])
-const paginacion = ref({})
-const carreras = ref([])
-const autores = ref([])
-
-const fetchBiblioteca = async () => {
-  const data = await getBiblioteca({
-    pagina: Number(route.query.pagina) || 1,
-    limite: Number(route.query.limite) || 10,
-    filtros: filtros.value,
-  })
-
-  libros.value = data.libros.data
-  paginacion.value = data.libros.paginacion
-  carreras.value = data.carreras.visibles
-  autores.value = data.autores.visibles
-}
-
-// 👇 Handlers para eventos del hijo
+// 📄 Cambiar de página
 const actualizarPagina = (nuevaPagina) => {
   router.replace({ query: { ...route.query, pagina: nuevaPagina } })
 }
 
+// 🔢 Cambiar límite por página
 const actualizarLimite = (nuevoLimite) => {
   router.replace({ query: { ...route.query, limite: nuevoLimite, pagina: 1 } })
 }
 
+// 👀 Vigilar cambios en la URL y actualizar datos
 watch(
   () => route.query,
-  (query) => {
+  async (query) => {
+    let carreras_filtro = []
+    let carreras_encontradas = query.carrera ? query.carrera.split(',') : []
+    for (let index in carreras_encontradas) {
+      let carrera_encontrada = carreras.value.find(
+        (c) => c.slug_carrera == carreras_encontradas[index],
+      )
+      carreras_filtro.push(carrera_encontrada['id_carrera'])
+    }
     filtros.value = {
-      carreras: query.carrera ? query.carrera.split(',') : [],
+      carreras: carreras_filtro,
       autores: query.autor ? query.autor.split(',') : [],
       busqueda: query.busqueda || '',
     }
-    fetchBiblioteca()
+    paginacion.value.pagina_actual = Number(query.pagina) || 1
+    paginacion.value.limite = Number(query.limite) || 10
+    await fetchLibros()
   },
   { immediate: true },
 )
 
-const showFiltros = ref(false)
-const filtroNombre = ref('')
+// 🎚 Control de sidebar
 function toggleFiltros() {
   showFiltros.value = !showFiltros.value
 }
+
+// 🧹 Limpiar filtros
 function limpiarFiltros() {
-  filtroNombre.value = ''
+  filtros.value = { autores: [], carreras: [], busqueda: '' }
+  router.replace({ path: route.path })
 }
 </script>
