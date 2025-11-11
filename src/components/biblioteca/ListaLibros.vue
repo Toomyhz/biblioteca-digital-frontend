@@ -12,7 +12,11 @@
         >
           <RouterLink :to="`/info/${libro.id_libro}`" class="flex items-center gap-4 w-full">
             <img
-              :src="libro.portada || '/LIBRO_SIN_PORTADA.png'"
+              :src="
+                libro.archivo_portada
+                  ? `http://localhost:5000/static/portadas/${libro.archivo_portada}`
+                  : '/LIBRO_SIN_PORTADA.png'
+              "
               :alt="`Portada de ${libro.titulo}`"
               class="h-24 md:h-28 lg:h-32 rounded object-cover flex-shrink-0"
               loading="lazy"
@@ -22,8 +26,10 @@
                 {{ libro.titulo }}
               </p>
               <p class="text-sm text-gray-600 mt-1">
+                <span v-for="autor in libro.autores" :key="autor.id_autor">
+                  {{ autor.nombre_completo || 'Autor desconocido' }}
+                </span>
                 <!-- Aquí puedes agregar autor, carrera u otra info -->
-                {{ libro.autor || 'Autor desconocido' }}
               </p>
             </div>
           </RouterLink>

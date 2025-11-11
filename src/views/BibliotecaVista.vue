@@ -70,8 +70,10 @@ const showFiltros = ref(false)
 
 // 🚀 Cargar datos iniciales
 onMounted(async () => {
-  autores.value = await getAutores()
-  carreras.value = await getCarreras()
+  let respAutores = await getAutores()
+  autores.value = respAutores.data
+  let respCarreras = await getCarreras()
+  carreras.value = respCarreras.data
   await fetchLibros()
 })
 
@@ -83,7 +85,7 @@ const fetchLibros = async () => {
       limite: paginacion.value.limite,
       filtros: filtros.value,
     })
-    libros.value = data.resultados || []
+    libros.value = data.libros.data || []
     paginacion.value.total = data.total // <- viene del backend
   } catch (err) {
     console.error('Error al cargar libros:', err)

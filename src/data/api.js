@@ -42,44 +42,43 @@ export async function getLibro(id) {
 
 export async function agregarLibro(libro, pdfFile = null) {
   try {
-    const formData = new FormData()
-
-    formData.append('new_titulo', libro.titulo)
-    formData.append('new_isbn', libro.isbn)
-    formData.append('new_estado', libro.estado)
-    formData.append('new_anio_publicacion', libro.anio_publicacion)
-
-    if (libro.ids_autores && libro.ids_autores.length > 0) {
-      libro.ids_autores.forEach((id) => {
-        formData.append('new_id_autor', id) // Múltiples valores con mismo key
-      })
-    }
-
-    if (libro.ids_carreras && libro.ids_carreras.length > 0) {
-      libro.ids_carreras.forEach((id) => {
-        formData.append('new_id_carrera', id)
-      })
-    }
-
-    if (pdfFile) {
-      formData.append('pdf', pdfFile)
+    const libroPayload = {
+      titulo: libro.titulo,
+      isbn: libro.isbn,
+      anio_publicacion: libro.anio_publicacion,
+      estado: libro.estado,
+      ids_autores: libro.ids_autores || [],
+      ids_carreras: libro.ids_carreras || [],
     }
 
     // Si no se proporciona el título, intentar obtenerlo desde Google Books
     if (!libro.titulo && libro.isbn) {
       const googleData = await buscarIsbn(libro.isbn)
       if (googleData && googleData.title) {
-        formData.set('new_titulo', googleData.title)
+        libroPayload.titulo = googleData.title
       }
     }
 
-    const res = await apiClient.post('/libros/', formData, {
+    const resCrear = await apiClient.post('/libros/', libroPayload, {
       headers: {
-        'Content-Type': 'multipart/form-data',
+        'Content-Type': 'application/json',
       },
     })
 
-    return res.data
+    if (pdfFile) {
+      const id_libro = resCrear.data.libro?.id_libro
+      if (!id_libro) {
+        throw new Error('La creación del librono devolvió un ID')
+      }
+      const fileFormData = new FormData()
+      fileFormData.append('pdf', pdfFile)
+      await apiClient.put(`/libros/${id_libro}/archivo`, fileFormData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      })
+    }
+    return resCrear.data
   } catch (err) {
     console.error('Error agregando libro:', err)
     throw err

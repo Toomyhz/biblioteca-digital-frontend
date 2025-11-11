@@ -139,7 +139,8 @@ const carreraAEliminar = ref(null)
 const cargarCarreras = async () => {
   cargando.value = true
   try {
-    carreras.value = await getCarreras()
+    let respCarreras = await getCarreras()
+    carreras.value = respCarreras.data
   } catch (err) {
     console.error('Error cargando carreras:', err)
     mostrarMensaje('Error al cargar la lista de carreras', 'error')

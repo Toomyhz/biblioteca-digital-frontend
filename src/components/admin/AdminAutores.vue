@@ -152,7 +152,8 @@ const busqueda_autor = ref('')
 const cargarAutores = async () => {
   cargando.value = true
   try {
-    autores.value = await getAutores(busqueda_autor.value)
+    let resAutores = await getAutores(busqueda_autor.value)
+    autores.value = resAutores.data
   } catch (err) {
     console.error('Error cargando autores:', err)
     mostrarMensaje('Error al cargar la lista de autores', 'error')

@@ -88,7 +88,7 @@
         />
       </div>
 
-      <!-- Imput del pdf -->
+      <!-- Input del pdf -->
       <div class="mb-3">
         <label class="block text-sm font-medium text-gray-700 mb-2"> PDF del libro </label>
         <input
@@ -372,6 +372,7 @@ const cargarLibros = async () => {
       limit: librosPorPagina.value,
       search: busqueda.value,
     })
+    console.log(response)
     libros.value = response.data
     totalLibros.value = response.paginacion.total
     totalPaginas.value = response.paginacion.total_paginas
@@ -385,7 +386,8 @@ const cargarLibros = async () => {
 
 const cargarAutores = async () => {
   try {
-    autores.value = await getAutores()
+    let respAutores = await getAutores()
+    autores.value = respAutores['data']
   } catch (err) {
     console.error('Error cargando autores:', err)
   }
@@ -393,7 +395,8 @@ const cargarAutores = async () => {
 
 const cargarCarreras = async () => {
   try {
-    carreras.value = await getCarreras()
+    let respCarreras = await getCarreras()
+    carreras.value = respCarreras['data']
   } catch (err) {
     console.error('Error cargando carreras:', err)
   }
@@ -470,8 +473,8 @@ const eliminarLibro = async () => {
   try {
     const res = await eliminarLibroAPI(libroAEliminar.value.id_libro)
     mostrarMensaje(res.mensaje || 'Libro eliminado exitosamente', 'success')
-    await cargarLibros()
     cerrarModal()
+    await cargarLibros()
   } catch (err) {
     console.error('Error eliminando libro:', err)
     const errorMsg =
