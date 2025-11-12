@@ -55,11 +55,10 @@
       >
         <input
           type="range"
-          min="2.2"
+          min="1"
           max="6"
           step="0.1"
           v-model.number="scale"
-          @input="renderPage(pageNum)"
           class="w-48 accent-blue-950"
         />
       </div>
@@ -68,17 +67,22 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf.mjs'
 import pdfjsWorker from 'pdfjs-dist/legacy/build/pdf.worker.mjs?url'
-import axios from 'axios'
+import { getLibro } from '@/data/api'
+import { BASE_URL } from '@/data/api'
+
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker
 
+const route = useRoute()
+const libro = ref(null)
 const canvasEl = ref(null)
 const pageNum = ref(1)
 const totalPages = ref(0)
 const titulo_libro = ref('Cargando...')
-const scale = ref(2.2)
+const scale = ref(1)
 
 const pdfViewer = ref(null)
 
@@ -88,18 +92,13 @@ let mouseDown, mouseLeave, mouseUp, mouseMove
 let pdfDoc = null
 let currentRenderTask = null
 
-async function obtenerToken(libroId) {
-  const response = await axios.get(`/api/lector/token-libro/${libroId}`, { withCredentials: true })
-  return response.data.token
-}
-
 onMounted(async () => {
-  const libroId = 3
-  const token = await obtenerToken(libroId)
+  const libroId = route.params.id_libro
+  const resLibro = await getLibro(libroId)
+  libro.value = resLibro.libro
+  titulo_libro.value = libro.value?.titulo
+  let url = `${BASE_URL}/static/pdfs/${libro.value?.archivo_pdf}`
 
-  const url = `http://localhost:5000/api/lector/libro/${libroId}?token=${token}`
-
-  titulo_libro.value = 'Proximamente dinámico'
   pdfDoc = await pdfjsLib.getDocument({ url, withCredentials: true }).promise
 
   totalPages.value = pdfDoc.numPages
@@ -191,4 +190,8 @@ function nextPage() {
     renderPage(pageNum.value)
   }
 }
+watch(scale, (newScaleValue) => {
+  // Llama a tu función de renderizado
+  renderPage(pageNum.value)
+})
 </script>

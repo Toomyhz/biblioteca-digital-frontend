@@ -2,6 +2,7 @@
 import { useRoute, useRouter } from 'vue-router'
 import Swal from 'sweetalert2'
 import { onMounted } from 'vue'
+import { BASE_URL } from '@/data/api'
 
 const route = useRoute()
 const router = useRouter()
@@ -27,7 +28,7 @@ onMounted(async () => {
 })
 
 function goLogin() {
-  globalThis.location.href = import.meta.env.VITE_BACKEND_URL + '/auth/login'
+  globalThis.location.href = BASE_URL + '/api/auth/login'
 }
 </script>
 <template>

@@ -10,29 +10,29 @@
         <div
           class="flex items-center gap-4 bg-white text-black rounded border-2 border-transparent hover:border-blue-800 hover:shadow-lg transition-all p-2"
         >
-          <RouterLink :to="`/info/${libro.id_libro}`" class="flex items-center gap-4 w-full">
-            <img
-              :src="
-                libro.archivo_portada
-                  ? `http://localhost:5000/static/portadas/${libro.archivo_portada}`
-                  : '/LIBRO_SIN_PORTADA.png'
-              "
-              :alt="`Portada de ${libro.titulo}`"
-              class="h-24 md:h-28 lg:h-32 rounded object-cover flex-shrink-0"
-              loading="lazy"
-            />
-            <div class="flex flex-col">
-              <p class="text-base font-semibold line-clamp-2">
-                {{ libro.titulo }}
-              </p>
-              <p class="text-sm text-gray-600 mt-1">
-                <span v-for="autor in libro.autores" :key="autor.id_autor">
-                  {{ autor.nombre_completo || 'Autor desconocido' }}
-                </span>
-                <!-- Aquí puedes agregar autor, carrera u otra info -->
-              </p>
-            </div>
-          </RouterLink>
+          <img
+            :src="
+              libro.archivo_portada
+                ? `${BASE_URL}/static/portadas/${libro.archivo_portada}`
+                : '/LIBRO_SIN_PORTADA.png'
+            "
+            :alt="`Portada de ${libro.titulo}`"
+            class="h-24 md:h-28 lg:h-32 rounded object-cover flex-shrink-0"
+            loading="lazy"
+          />
+          <div class="flex flex-col">
+            <p class="text-base font-semibold line-clamp-2">
+              {{ libro.titulo }}
+            </p>
+            <p class="text-sm text-gray-600 mt-1">
+              <span v-for="autor in libro.autores" :key="autor.id_autor">
+                {{ autor.nombre_completo || 'Autor desconocido' }}
+              </span>
+            </p>
+            <RouterLink :to="`/leer/${libro.id_libro}`">
+              <span>Ver en línea</span>
+            </RouterLink>
+          </div>
         </div>
       </li>
     </ul>
@@ -76,6 +76,7 @@
 </template>
 
 <script setup>
+import { BASE_URL } from '@/data/api'
 const props = defineProps({
   libros: {
     type: Array,

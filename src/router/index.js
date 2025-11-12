@@ -32,8 +32,8 @@ const router = createRouter({
       component: () => import('../views/BibliotecaVista.vue'),
     },
     {
-      path: '/test-lector',
-      name: 'test-lector',
+      path: '/leer/:id_libro',
+      name: 'leer',
       component: () => import('../views/LectorVista.vue'),
     },
     {

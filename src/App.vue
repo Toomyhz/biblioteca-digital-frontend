@@ -6,7 +6,7 @@ const route = useRoute()
 
 <template>
   <div class="min-h-screen bg-gray-200">
-    <TheNavbar v-if="route.name != 'login' && route.name != 'test-lector'" />
+    <TheNavbar v-if="route.name != 'login' && route.name != 'leer'" />
     <RouterView />
   </div>
 </template>

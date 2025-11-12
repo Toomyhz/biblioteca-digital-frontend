@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import { BASE_URL } from '@/data/api'
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
@@ -11,7 +12,7 @@ export const useAuthStore = defineStore('auth', {
     async fetchUser() {
       if (this.hasFetched) return
       try {
-        const response = await fetch('http://localhost:5000/api/auth/me', {
+        const response = await fetch(`${BASE_URL}/api/auth/me`, {
           credentials: 'include',
         })
 
@@ -40,7 +41,7 @@ export const useAuthStore = defineStore('auth', {
 
     async logout() {
       try {
-        await fetch('http://localhost:5000/api/auth/logout', {
+        await fetch(`${BASE_URL}/api/auth/logout`, {
           method: 'POST',
           credentials: 'include',
         })

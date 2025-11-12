@@ -1,7 +1,9 @@
 import axios from 'axios'
 import { buscarIsbn } from './googleBooks'
 
-const API_URL = 'http://127.0.0.1:5000/api'
+export const BASE_URL = import.meta.env.VITE_BACKEND_BASE_URL
+
+const API_URL = `${BASE_URL}/api`
 
 // Configuración global de axios
 const apiClient = axios.create({
@@ -42,42 +44,44 @@ export async function getLibro(id) {
 
 export async function agregarLibro(libro, pdfFile = null) {
   try {
-    const libroPayload = {
-      titulo: libro.titulo,
-      isbn: libro.isbn,
-      anio_publicacion: libro.anio_publicacion,
-      estado: libro.estado,
-      ids_autores: libro.ids_autores || [],
-      ids_carreras: libro.ids_carreras || [],
+    if (!pdfFile) {
+      throw new Error('El archivo PDF es obligatorio.')
+    }
+
+    const formData = new FormData()
+
+    formData.append('titulo', libro.titulo)
+    formData.append('isbn', libro.isbn)
+    formData.append('anio_publicacion', libro.anio_publicacion)
+    formData.append('estado', libro.estado)
+
+    if (libro.ids_autores && libro.ids_autores.length > 0) {
+      libro.ids_autores.forEach((id) => {
+        formData.append('ids_autores', id) // Se añade la clave 'ids_autores' varias veces
+      })
+    }
+
+    if (libro.ids_carreras && libro.ids_carreras.length > 0) {
+      libro.ids_carreras.forEach((id) => {
+        formData.append('ids_carreras', id) // Se añade la clave 'ids_carreras' varias veces
+      })
     }
 
     // Si no se proporciona el título, intentar obtenerlo desde Google Books
     if (!libro.titulo && libro.isbn) {
       const googleData = await buscarIsbn(libro.isbn)
       if (googleData && googleData.title) {
-        libroPayload.titulo = googleData.title
+        formData.append('titulo', googleData.title)
       }
     }
+    formData.append('pdf', pdfFile)
 
-    const resCrear = await apiClient.post('/libros/', libroPayload, {
+    const resCrear = await apiClient.post('/libros/', formData, {
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'multipart/form-data',
       },
     })
 
-    if (pdfFile) {
-      const id_libro = resCrear.data.libro?.id_libro
-      if (!id_libro) {
-        throw new Error('La creación del librono devolvió un ID')
-      }
-      const fileFormData = new FormData()
-      fileFormData.append('pdf', pdfFile)
-      await apiClient.put(`/libros/${id_libro}/archivo`, fileFormData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      })
-    }
     return resCrear.data
   } catch (err) {
     console.error('Error agregando libro:', err)
@@ -87,34 +91,31 @@ export async function agregarLibro(libro, pdfFile = null) {
 
 export async function actualizarLibro(id, libro, pdfFile = null) {
   try {
-    const formData = new FormData()
-
-    formData.append('edit_titulo', libro.titulo)
-    formData.append('edit_isbn', libro.isbn)
-    formData.append('edit_estado', libro.estado)
-    formData.append('edit_anio_publicacion', libro.anio_publicacion)
-
-    if (libro.ids_autores && libro.ids_autores.length > 0) {
-      libro.ids_autores.forEach((id) => {
-        formData.append('edit_id_autor', id)
-      })
+    const metadataPayload = {
+      titulo: libro.titulo,
+      isbn: libro.isbn,
+      anio_publicacion: libro.anio_publicacion,
+      estado: libro.estado,
+      ids_autores: libro.ids_autores || [],
+      ids_carreras: libro.ids_carreras || [],
     }
-
-    if (libro.ids_carreras && libro.ids_carreras.length > 0) {
-      libro.ids_carreras.forEach((id) => {
-        formData.append('edit_id_carrera', id)
-      })
-    }
-
-    if (pdfFile) {
-      formData.append('pdf', pdfFile)
-    }
-
-    const res = await apiClient.put(`/libros/${id}`, formData, {
+    const res = await apiClient.put(`/libros/${id}`, metadataPayload, {
       headers: {
-        'Content-Type': 'multipart/form-data',
+        Content_Type: 'application/json',
       },
     })
+
+    if (pdfFile) {
+      const fileFormData = new FormData()
+      fileFormData.append('pdf', pdfFile)
+
+      // 2.2: Hacemos la SEGUNDA llamada PUT a /libros/<id>/archivo
+      await apiClient.put(`/libros/${id}/archivo`, fileFormData, {
+        headers: {
+          'Content-Type': 'multipart/form-data', // <-- ¡Clave!
+        },
+      })
+    }
     return res.data
   } catch (err) {
     console.error('Error actualizando libro:', err)
@@ -246,17 +247,6 @@ export async function eliminarCarrera(id) {
   }
 }
 
-// ==================== CARRERAS ====================
-export async function getCarrerasHome() {
-  try {
-    const resp = await apiClient.get('/libros/home/')
-    return resp.data
-  } catch (err) {
-    console.error('Error en getCarrerasHome', err)
-    throw err
-  }
-}
-
 //=================== BIBLIOTECA ====================
 export const getBiblioteca = async ({ pagina = 1, limite = 10, filtros = {} }) => {
   const params = {
@@ -278,6 +268,17 @@ export const getBiblioteca = async ({ pagina = 1, limite = 10, filtros = {} }) =
 
   try {
     const resp = await apiClient.get('/biblioteca/', { params })
+    return resp.data
+  } catch (err) {
+    console.error('Error en getBiblitoeca', err)
+    throw err
+  }
+}
+
+// LECTOR
+export const getPdf = async (path) => {
+  try {
+    const resp = await apiClient.get(`/static/pdfs/${path}`)
     return resp.data
   } catch (err) {
     console.error('Error en getBiblitoeca', err)
