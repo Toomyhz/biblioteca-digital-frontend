@@ -12,7 +12,7 @@ export const useAuthStore = defineStore('auth', {
     async fetchUser() {
       if (this.hasFetched) return
       try {
-        const response = await fetch(`${BASE_URL}/api/auth/me`, {
+        const response = await fetch(`${BASE_URL}/auth/me`, {
           credentials: 'include',
         })
 
@@ -41,7 +41,7 @@ export const useAuthStore = defineStore('auth', {
 
     async logout() {
       try {
-        await fetch(`${BASE_URL}/api/auth/logout`, {
+        await fetch(`${BASE_URL}/auth/logout`, {
           method: 'POST',
           credentials: 'include',
         })

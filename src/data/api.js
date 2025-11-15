@@ -3,11 +3,10 @@ import { buscarIsbn } from './googleBooks'
 
 export const BASE_URL = import.meta.env.VITE_BACKEND_BASE_URL
 
-const API_URL = `${BASE_URL}/api`
 
 // Configuración global de axios
 const apiClient = axios.create({
-  baseURL: API_URL,
+  baseURL: BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },

@@ -69,12 +69,11 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf.mjs'
-import pdfjsWorker from 'pdfjs-dist/legacy/build/pdf.worker.mjs?url'
+import * as pdfjsLib from '@/assets/pdf.mjs'
 import { getLibro } from '@/data/api'
 import { BASE_URL } from '@/data/api'
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker
+pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.js'
 
 const route = useRoute()
 const libro = ref(null)

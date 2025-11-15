@@ -28,7 +28,7 @@ onMounted(async () => {
 })
 
 function goLogin() {
-  globalThis.location.href = BASE_URL + '/api/auth/login'
+  globalThis.location.href = BASE_URL + '/auth/login'
 }
 </script>
 <template>
