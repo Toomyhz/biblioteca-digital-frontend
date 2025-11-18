@@ -137,7 +137,7 @@ export async function eliminarLibro(id) {
 export async function getAutores(busqueda = '') {
   try {
     const query = busqueda ? `?busqueda=${encodeURIComponent(busqueda)}` : ''
-    const { data } = await apiClient.get(`/autores${query}`)
+    const { data } = await apiClient.get(`/autores/${query}`)
     return data
   } catch (err) {
     console.error('Error en getAutores:', err)
