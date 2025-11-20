@@ -211,7 +211,7 @@ export async function getCarrera(id) {
 export async function agregarCarrera(carrera) {
   try {
     const res = await apiClient.post('/carreras/', {
-      new_nombre: carrera.nombre,
+      new_nombre_carrera: carrera.nombre,
     })
     return res.data
   } catch (err) {
