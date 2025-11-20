@@ -49,6 +49,25 @@
           ▶
         </button>
       </div>
+      <div
+        v-if="isLoading"
+        class="absolute inset-0 bg-white/90 backdrop-blur-sm z-50 flex flex-col items-center justify-center"
+      >
+        <div class="mb-4 animate-bounce text-4xl">📚</div>
+
+        <h3 class="text-lg font-bold text-blue-950 mb-2">Descargando Libro...</h3>
+
+        <div class="w-64 h-4 bg-gray-200 rounded-full overflow-hidden border border-gray-300">
+          <div
+            class="h-full bg-blue-600 transition-all duration-200 ease-out flex items-center justify-center text-[10px] text-white font-bold"
+            :style="{ width: `${downloadProgress}%` }"
+          >
+            {{ downloadProgress }}%
+          </div>
+        </div>
+
+        <p class="text-xs text-gray-500 mt-2">Por favor espera mientras preparamos la lectura</p>
+      </div>
       <!-- 🔹 Control de zoom -->
       <div
         class="p-2 items-center justify-center gap-3 bg-white/70 sticky bottom-0 w-fit mx-auto px-4 rounded hidden sm:flex"
@@ -67,11 +86,10 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
+import { ref, onMounted, onBeforeUnmount, watch, shallowRef } from 'vue' // <--- Agregamos watch y shallowRef
 import { useRoute } from 'vue-router'
 import * as pdfjsLib from '@/assets/pdf.mjs'
-import { getLibro } from '@/data/api'
-import { BASE_URL } from '@/data/api'
+import { getLibro, getUrl } from '@/data/api'
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.js'
 
@@ -85,72 +103,123 @@ const scale = ref(1)
 
 const pdfViewer = ref(null)
 
-const viewer = ref(null)
-let mouseDown, mouseLeave, mouseUp, mouseMove
+const isLoading = ref(true)
+const downloadProgress = ref(0)
 
-let pdfDoc = null
+// Usamos shallowRef para el documento PDF (es mejor rendimiento que let normal o ref profundo)
+const pdfDoc = shallowRef(null)
 let currentRenderTask = null
 
-onMounted(async () => {
-  const libroId = route.params.id_libro
-  const resLibro = await getLibro(libroId)
-  libro.value = resLibro.libro
-  titulo_libro.value = libro.value?.titulo
-  let url = `${BASE_URL}/static/pdfs/${libro.value?.archivo_pdf}`
-
-  pdfDoc = await pdfjsLib.getDocument({ url, withCredentials: true }).promise
-
-  totalPages.value = pdfDoc.numPages
+// --- 1. EL ARREGLO DEL ZOOM ---
+// Vigilamos la variable 'scale'. Cuando cambia, repintamos.
+watch(scale, (newScale) => {
   renderPage(pageNum.value)
-  viewer.value = pdfViewer.value
-  let isDown = false
-  let startX, startY, scrollLeft, scrollTop
-
-  const mouseDown = (e) => {
-    isDown = true
-    viewer.value.classList.add('cursor-grabbing')
-    startX = e.pageX - viewer.value.offsetLeft
-    startY = e.pageY - viewer.value.offsetTop
-    scrollLeft = viewer.value.scrollLeft
-    scrollTop = viewer.value.scrollTop
-  }
-
-  const mouseLeave = () => {
-    isDown = false
-    viewer.value.classList.remove('cursor-grabbing')
-  }
-
-  const mouseUp = () => {
-    isDown = false
-    viewer.value.classList.remove('cursor-grabbing')
-  }
-
-  const mouseMove = (e) => {
-    if (!isDown) return
-    e.preventDefault()
-    const x = e.pageX - viewer.value.offsetLeft
-    const y = e.pageY - viewer.value.offsetTop
-    const walkX = (x - startX) * 1 // multiplicador de velocidad
-    const walkY = (y - startY) * 1
-    viewer.value.scrollLeft = scrollLeft - walkX
-    viewer.value.scrollTop = scrollTop - walkY
-  }
-
-  viewer.value.addEventListener('mousedown', mouseDown)
-  viewer.value.addEventListener('mouseleave', mouseLeave)
-  viewer.value.addEventListener('mouseup', mouseUp)
-  viewer.value.addEventListener('mousemove', mouseMove)
 })
+
+// --- VARIABLES PARA DRAG & DROP (Definirlas afuera para poder borrarlas luego) ---
+let isDown = false
+let startX, startY, scrollLeft, scrollTop
+
+// Definimos las funciones AQUÍ (afuera del onMounted) para que existan en todo el script
+const mouseDown = (e) => {
+  if (!pdfViewer.value) return
+  isDown = true
+  pdfViewer.value.classList.add('cursor-grabbing')
+  startX = e.pageX - pdfViewer.value.offsetLeft
+  startY = e.pageY - pdfViewer.value.offsetTop
+  scrollLeft = pdfViewer.value.scrollLeft
+  scrollTop = pdfViewer.value.scrollTop
+}
+
+const mouseLeave = () => {
+  isDown = false
+  if (pdfViewer.value) pdfViewer.value.classList.remove('cursor-grabbing')
+}
+
+const mouseUp = () => {
+  isDown = false
+  if (pdfViewer.value) pdfViewer.value.classList.remove('cursor-grabbing')
+}
+
+const mouseMove = (e) => {
+  if (!isDown || !pdfViewer.value) return
+  e.preventDefault()
+  const x = e.pageX - pdfViewer.value.offsetLeft
+  const y = e.pageY - pdfViewer.value.offsetTop
+  const walkX = (x - startX) * 1.5 // Le subí un poco la velocidad (1.5)
+  const walkY = (y - startY) * 1.5
+  pdfViewer.value.scrollLeft = scrollLeft - walkX
+  pdfViewer.value.scrollTop = scrollTop - walkY
+}
+
+onMounted(async () => {
+  try {
+    // 1. Cargar Metadata
+    const libroId = route.params.id_libro
+    const resLibro = await getLibro(libroId)
+    libro.value = resLibro.libro
+    titulo_libro.value = libro.value?.titulo
+
+    // 2. Obtener URL Firmada
+    const data = await getUrl(libro.value?.id_libro)
+    if (!data.url) throw new Error('No se recibió la URL')
+
+    // 3. Cargar PDF desde DigitalOcean
+    const loadingTask = pdfjsLib.getDocument({
+      url: data.url,
+      withCredentials: false, // IMPORTANTE para CORS
+    })
+    loadingTask.onProgress = (progressData) => {
+      if (progressData.total > 0) {
+        const percent = (progressData.loaded / progressData.total) * 100
+        downloadProgress.value = Math.round(percent)
+      } else {
+        // Si el servidor no dice el tamaño total, avanzamos fake o mostramos indeterminado
+        downloadProgress.value = 0
+      }
+    }
+
+    pdfDoc.value = await loadingTask.promise
+    totalPages.value = pdfDoc.value.numPages
+
+    // 4. Renderizar primera página
+    renderPage(pageNum.value)
+  } catch (e) {
+    console.error(e)
+  } finally {
+    isLoading.value = false
+  }
+
+  // 5. Activar eventos del Mouse (Drag to Scroll)
+  if (pdfViewer.value) {
+    pdfViewer.value.addEventListener('mousedown', mouseDown)
+    pdfViewer.value.addEventListener('mouseleave', mouseLeave)
+    pdfViewer.value.addEventListener('mouseup', mouseUp)
+    pdfViewer.value.addEventListener('mousemove', mouseMove)
+  }
+})
+
 onBeforeUnmount(() => {
-  viewer.value.removeEventListener('mousedown', mouseDown)
-  viewer.value.removeEventListener('mouseleave', mouseLeave)
-  viewer.value.removeEventListener('mouseup', mouseUp)
-  viewer.value.removeEventListener('mousemove', mouseMove)
+  // Limpieza de eventos (Ahora sí funciona porque las funciones son visibles)
+  if (pdfViewer.value) {
+    pdfViewer.value.removeEventListener('mousedown', mouseDown)
+    pdfViewer.value.removeEventListener('mouseleave', mouseLeave)
+    pdfViewer.value.removeEventListener('mouseup', mouseUp)
+    pdfViewer.value.removeEventListener('mousemove', mouseMove)
+  }
 })
 
 async function renderPage(num) {
-  const page = await pdfDoc.getPage(num)
+  if (!pdfDoc.value) return
 
+  // Si hay una renderización en proceso, la cancelamos para que no se solapen
+  if (currentRenderTask) {
+    await currentRenderTask.cancel()
+  }
+
+  const page = await pdfDoc.value.getPage(num)
+
+  // Aquí es donde 'scale.value' hace efecto
   const viewport = page.getViewport({ scale: scale.value })
   const canvas = canvasEl.value
   const ctx = canvas.getContext('2d')
@@ -158,16 +227,13 @@ async function renderPage(num) {
   canvas.width = viewport.width
   canvas.height = viewport.height
 
-  if (currentRenderTask) {
-    await currentRenderTask.cancel()
-  }
-
   currentRenderTask = page.render({ canvasContext: ctx, viewport })
+
   try {
     await currentRenderTask.promise
   } catch (error) {
     if (error.name === 'RenderingCancelledException') {
-      // Render was cancelled, do nothing
+      // Ignorar cancelación (es normal al hacer zoom rápido)
     } else {
       console.error('Error rendering page:', error)
     }
@@ -189,8 +255,4 @@ function nextPage() {
     renderPage(pageNum.value)
   }
 }
-watch(scale, (newScaleValue) => {
-  // Llama a tu función de renderizado
-  renderPage(pageNum.value)
-})
 </script>
