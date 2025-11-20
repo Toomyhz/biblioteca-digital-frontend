@@ -2,7 +2,7 @@ import axios from 'axios'
 import { buscarIsbn } from './googleBooks'
 
 export const BASE_URL = import.meta.env.VITE_BACKEND_BASE_URL
-
+export const DO_URL = import.meta.env.VITE_DO_URL
 
 // Configuración global de axios
 const apiClient = axios.create({
@@ -100,7 +100,7 @@ export async function actualizarLibro(id, libro, pdfFile = null) {
     }
     const res = await apiClient.put(`/libros/${id}`, metadataPayload, {
       headers: {
-        Content_Type: 'application/json',
+        'Content-Type': 'application/json',
       },
     })
 
@@ -109,11 +109,7 @@ export async function actualizarLibro(id, libro, pdfFile = null) {
       fileFormData.append('pdf', pdfFile)
 
       // 2.2: Hacemos la SEGUNDA llamada PUT a /libros/<id>/archivo
-      await apiClient.put(`/libros/${id}/archivo`, fileFormData, {
-        headers: {
-          'Content-Type': 'multipart/form-data', // <-- ¡Clave!
-        },
-      })
+      await apiClient.put(`/libros/${id}/archivo`, fileFormData)
     }
     return res.data
   } catch (err) {
@@ -137,7 +133,7 @@ export async function eliminarLibro(id) {
 export async function getAutores(busqueda = '') {
   try {
     const query = busqueda ? `?busqueda=${encodeURIComponent(busqueda)}` : ''
-    const { data } = await apiClient.get(`/autores${query}`)
+    const { data } = await apiClient.get(`/autores/${query}`)
     return data
   } catch (err) {
     console.error('Error en getAutores:', err)
@@ -275,9 +271,9 @@ export const getBiblioteca = async ({ pagina = 1, limite = 10, filtros = {} }) =
 }
 
 // LECTOR
-export const getPdf = async (path) => {
+export const getUrl = async (id_libro) => {
   try {
-    const resp = await apiClient.get(`/static/pdfs/${path}`)
+    const resp = await apiClient.get(`/static/leer/${id_libro}`)
     return resp.data
   } catch (err) {
     console.error('Error en getBiblitoeca', err)

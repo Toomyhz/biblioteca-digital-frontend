@@ -24,9 +24,9 @@
       role="menu"
       class="absolute right-0 mt-2 w-48 z-50 bg-white text-black rounded-lg shadow-lg overflow-hidden border border-gray-200"
     >
-      <li role="menuitem" class="px-4 py-2 hover:bg-gray-100">
+      <!-- <li role="menuitem" class="px-4 py-2 hover:bg-gray-100">
         <router-link to="/perfil" class="block w-full text-left">Mi perfil</router-link>
-      </li>
+      </li> -->
 
       <li v-if="esAdmin" role="menuitem" class="px-4 py-2 hover:bg-gray-100">
         <router-link to="/admin-biblioteca/libros" class="block w-full text-left"

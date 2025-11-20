@@ -6,19 +6,17 @@
 
     <!-- Lista de libros -->
     <ul v-else class="flex flex-col gap-2">
-      <li v-for="libro in props.libros" :key="libro.id_libro">
+      <li v-for="(libro, index) in props.libros" :key="libro.id_libro">
         <div
           class="flex items-center gap-4 bg-white text-black rounded border-2 border-transparent hover:border-blue-800 hover:shadow-lg transition-all p-2"
         >
           <img
             :src="
-              libro.archivo_portada
-                ? `${BASE_URL}/static/portadas/${libro.archivo_portada}`
-                : '/LIBRO_SIN_PORTADA.png'
+              libro.archivo_portada ? `${DO_URL}${libro.archivo_portada}` : '/LIBRO_SIN_PORTADA.png'
             "
             :alt="`Portada de ${libro.titulo}`"
-            class="h-24 md:h-28 lg:h-32 rounded object-cover flex-shrink-0"
-            loading="lazy"
+            class="h-24 md:h-28 lg:h-32 w-auto aspect-[2/3] rounded object-cover flex-shrink-0 bg-gray-200"
+            :loading="index < 4 ? 'eager' : 'lazy'"
           />
           <div class="flex flex-col">
             <p class="text-base font-semibold line-clamp-2">
@@ -76,7 +74,7 @@
 </template>
 
 <script setup>
-import { BASE_URL } from '@/data/api'
+import { DO_URL } from '@/data/api'
 const props = defineProps({
   libros: {
     type: Array,
