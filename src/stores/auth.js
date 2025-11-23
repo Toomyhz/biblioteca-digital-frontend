@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { BASE_URL } from '@/data/api'
+import { useCatalogAdminStore, useCatalogBibliotecaStore } from './catalog'
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
@@ -48,11 +49,13 @@ export const useAuthStore = defineStore('auth', {
       } catch (error) {
         console.error('Error al cerrar sesión:', error)
       } finally {
-        // Limpiar todo el estado
-        this.user = null
-        this.isAuthenticated = false
-        this.isAdmin = false
-        this.hasFetched = false
+        this.$reset()
+
+        const catalogAdmin = useCatalogAdminStore()
+        const catalogBiblioteca = useCatalogBibliotecaStore()
+
+        catalogAdmin.$reset()
+        catalogBiblioteca.$reset()
       }
     },
   },

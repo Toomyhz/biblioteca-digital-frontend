@@ -1,16 +1,25 @@
 <template>
-  <div class="py-4">
-    <div class="flex justify-center">
-      <input
-        v-model="buscadorLibros"
-        type="text"
-        name="buscador-libros"
-        id="buscador-libros"
-        class="bg-gray-100 text-gray-900 rounded-full p-2 w-3/4"
-        placeholder="Ingrese un libro a buscar.."
-        @keydown.enter="buscarLibro"
-      />
-    </div>
+  <div class="w-full">
+    <form @submit.prevent="buscarLibro">
+      <div
+        class="relative flex items-center bg-white border border-slate-300 rounded-full shadow-sm px-3 py-1.5"
+      >
+        <input
+          v-model="buscadorLibros"
+          type="text"
+          name="buscador-libros"
+          id="buscador-libros"
+          class="bg-transparent text-slate-900 placeholder:text-slate-400 text-sm sm:text-base flex-1 focus:outline-none"
+          placeholder="Buscar por título, autor o carrera..."
+        />
+        <button
+          type="submit"
+          class="ml-2 px-3 py-1.5 text-xs sm:text-sm rounded-full bg-blue-900 text-white hover:bg-slate-800 transition-colors"
+        >
+          Buscar
+        </button>
+      </div>
+    </form>
   </div>
 </template>
 <script setup>

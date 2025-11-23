@@ -72,8 +72,7 @@
           class="flex-1 min-w-[200px] px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 disabled:bg-gray-100"
         >
           <option value="disponible">Disponible</option>
-          <option value="prestado">Prestado</option>
-          <option value="reservado">Reservado</option>
+          <option value="en-revision">En revision</option>
         </select>
 
         <input
@@ -313,13 +312,12 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
+import { useCatalogAdminStore, useCatalogBibliotecaStore } from '@/stores/catalog'
 import {
   getLibros,
   agregarLibro,
   actualizarLibro,
   eliminarLibro as eliminarLibroAPI,
-  getAutores,
-  getCarreras,
 } from '@/data/api'
 
 const titulo = ref('')
@@ -332,8 +330,14 @@ const pdfFile = ref(null)
 const fileInput = ref(null)
 
 const libros = ref([])
-const autores = ref([])
-const carreras = ref([])
+
+const catalog = useCatalogAdminStore()
+
+const catalogBiblioteca = useCatalogBibliotecaStore()
+
+const autores = computed(() => catalog.autores)
+const carreras = computed(() => catalog.carreras)
+
 const mensaje = ref('')
 const mensajeTipo = ref('info')
 const cargando = ref(false)
@@ -372,7 +376,6 @@ const cargarLibros = async () => {
       limit: librosPorPagina.value,
       search: busqueda.value,
     })
-    console.log(response)
     libros.value = response.data
     totalLibros.value = response.paginacion.total
     totalPaginas.value = response.paginacion.total_paginas
@@ -381,24 +384,6 @@ const cargarLibros = async () => {
     mostrarMensaje('Error al cargar la lista de libros', 'error')
   } finally {
     cargando.value = false
-  }
-}
-
-const cargarAutores = async () => {
-  try {
-    let respAutores = await getAutores()
-    autores.value = respAutores['data']
-  } catch (err) {
-    console.error('Error cargando autores:', err)
-  }
-}
-
-const cargarCarreras = async () => {
-  try {
-    let respCarreras = await getCarreras()
-    carreras.value = respCarreras['data']
-  } catch (err) {
-    console.error('Error cargando carreras:', err)
   }
 }
 
@@ -431,6 +416,8 @@ const submitLibro = async () => {
 
     limpiarFormulario()
     await cargarLibros()
+    // 🔥 IMPORTANTE: refrescar catálogo global para selects/filtro
+    await catalogBiblioteca.load()
   } catch (err) {
     console.error('Error:', err)
     const errorMsg =
@@ -536,6 +523,7 @@ watch(busqueda, () => {
 })
 
 onMounted(async () => {
-  await Promise.all([cargarLibros(), cargarAutores(), cargarCarreras()])
+  await catalog.load()
+  cargarLibros()
 })
 </script>

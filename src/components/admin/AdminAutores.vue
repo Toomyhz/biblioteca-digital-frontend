@@ -136,6 +136,10 @@ import {
   actualizarAutor,
   eliminarAutor as eliminarAutorAPI,
 } from '@/data/api'
+import { useCatalogAdminStore, useCatalogBibliotecaStore } from '@/stores/catalog' // 🔹 nuevo import
+
+const catalogAdmin = useCatalogAdminStore() // 🔹 instancia del store
+const catalogBiblioteca = useCatalogBibliotecaStore() // 🔹 instancia del store
 
 const nombre = ref('')
 const nacionalidad = ref('')
@@ -178,17 +182,19 @@ const submitAutor = async () => {
 
   try {
     if (modoEdicion.value) {
-      // Actualizar autor existente
       const res = await actualizarAutor(autorEditando.value, datosAutor)
       mostrarMensaje(res.mensaje || 'Autor actualizado exitosamente', 'success')
     } else {
-      // Agregar nuevo autor
       const res = await agregarAutor(datosAutor)
       mostrarMensaje(res.mensaje || 'Autor agregado exitosamente', 'success')
     }
 
     limpiarFormulario()
     await cargarAutores()
+
+    // 🔥 IMPORTANTE: refrescar catálogo global para selects/filtros
+    await catalogAdmin.reload()
+    await catalogBiblioteca.reload()
   } catch (err) {
     console.error('Error:', err)
     const errorMsg =
@@ -197,28 +203,6 @@ const submitAutor = async () => {
   } finally {
     cargando.value = false
   }
-}
-
-const editarAutor = (autor) => {
-  modoEdicion.value = true
-  autorEditando.value = autor.id_autor
-  nombre.value = autor.nombre_completo
-  nacionalidad.value = autor.nacionalidad || ''
-
-  // Scroll al formulario
-  window.scrollTo({ top: 0, behavior: 'smooth' })
-
-  mostrarMensaje(`Editando: ${autor.nombre_completo}`, 'info')
-}
-
-const cancelarEdicion = () => {
-  limpiarFormulario()
-  mostrarMensaje('Edición cancelada', 'info')
-}
-
-const confirmarEliminar = (autor) => {
-  autorAEliminar.value = autor
-  mostrarModalEliminar.value = true
 }
 
 const eliminarAutor = async () => {
@@ -231,6 +215,10 @@ const eliminarAutor = async () => {
     mostrarMensaje(res.mensaje || 'Autor eliminado exitosamente', 'success')
     await cargarAutores()
     cerrarModal()
+
+    // 🔥 También refrescamos el catálogo global
+    await catalogAdmin.reload()
+    await catalogBiblioteca.reload()
   } catch (err) {
     console.error('Error eliminando autor:', err)
     const errorMsg =
@@ -239,6 +227,26 @@ const eliminarAutor = async () => {
   } finally {
     cargando.value = false
   }
+}
+
+const editarAutor = (autor) => {
+  modoEdicion.value = true
+  autorEditando.value = autor.id_autor
+  nombre.value = autor.nombre_completo
+  nacionalidad.value = autor.nacionalidad || ''
+
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+  mostrarMensaje(`Editando: ${autor.nombre_completo}`, 'info')
+}
+
+const cancelarEdicion = () => {
+  limpiarFormulario()
+  mostrarMensaje('Edición cancelada', 'info')
+}
+
+const confirmarEliminar = (autor) => {
+  autorAEliminar.value = autor
+  mostrarModalEliminar.value = true
 }
 
 const cerrarModal = () => {
@@ -257,7 +265,6 @@ const mostrarMensaje = (texto, tipo = 'info') => {
   mensaje.value = texto
   mensajeTipo.value = tipo
 
-  // Auto-ocultar mensajes de éxito después de 3 segundos
   if (tipo === 'success') {
     setTimeout(() => {
       mensaje.value = ''

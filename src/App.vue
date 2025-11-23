@@ -5,7 +5,7 @@ const route = useRoute()
 </script>
 
 <template>
-  <div class="min-h-screen bg-gray-200">
+  <div class="min-h-screen bg-slate-50">
     <TheNavbar v-if="route.name != 'login' && route.name != 'leer'" />
     <RouterView />
   </div>

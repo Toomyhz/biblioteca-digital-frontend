@@ -1,48 +1,62 @@
 <template>
-  <div class="relative h-50 md:h-75 bg-[url('/biblioteca_header.webp')] bg-cover bg-center bg">
-    <div class="absolute inset-0 bg-blue-950/60"></div>
-    <div class="relative flex-col justify-center">
-      <h2 class="text-4xl md:text-5xl text-center p-8 text-white"><b>Catálogo Digital</b></h2>
-      <div class="flex w-full justify-center">
-        <div class="relative w-9/12 md:w-2/5">
-          <input
-            v-model="buscadorLibros"
-            type="text"
-            placeholder="Buscar todo"
-            class="w-full h-10 pl-4 pr-4 rounded-full bg-gray-100 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            @keydown.enter="buscarLibro"
-          />
-          <button
-            @click="buscarLibro"
-            class="absolute inset-y-0 right-0 flex items-center w-15 text-gray-500 hover:text-gray-700 rounded-full hover:bg-blue-950/40"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="h-5 w-full"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
+  <section class="relative overflow-hidden">
+    <div
+      class="relative min-h-[260px] md:min-h-[320px] bg-[url('/biblioteca_header.webp')] bg-cover bg-center"
+    >
+      <!-- Capa oscura -->
+      <div class="absolute inset-0 bg-slate-950/70"></div>
+
+      <!-- Contenido -->
+      <div
+        class="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12 flex flex-col gap-6"
+      >
+        <!-- Texto -->
+        <div class="max-w-xl">
+          <h1 class="text-3xl sm:text-4xl lg:text-5xl font-semibold text-white leading-tight">
+            Catálogo digital
+          </h1>
+          <p class="mt-3 text-sm sm:text-base text-slate-200">
+            Explora los libros digitalizados que la biblioteca UMCE ofrece.
+          </p>
+        </div>
+
+        <!-- Buscador principal -->
+        <div class="w-full sm:max-w-xl">
+          <form @submit.prevent="buscarLibro">
+            <div
+              class="relative flex items-center bg-white border border-slate-200 rounded-full shadow-md px-3 py-1.5"
             >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M21 21l-4.35-4.35M10 18a8 8 0 100-16 8 8 0 000 16z"
+              <input
+                v-model="buscadorLibros"
+                type="text"
+                placeholder="Buscar en la biblioteca digital..."
+                class="bg-transparent text-slate-900 placeholder:text-slate-400 text-sm sm:text-base flex-1 focus:outline-none"
               />
-            </svg>
-          </button>
+              <button
+                type="submit"
+                class="ml-2 px-3 sm:px-4 py-1.5 text-xs sm:text-sm rounded-full bg-blue-900 text-white hover:bg-slate-800 transition-colors"
+              >
+                Buscar
+              </button>
+            </div>
+          </form>
+          <p class="mt-2 text-[11px] sm:text-xs text-slate-200">
+            Presiona Enter para ver los resultados en la biblioteca.
+          </p>
         </div>
       </div>
     </div>
-  </div>
+  </section>
 </template>
+
 <script setup>
 import { useRouter } from 'vue-router'
 import { ref } from 'vue'
+
 const buscadorLibros = ref('')
 const router = useRouter()
+
 const buscarLibro = () => {
-  // Evitar la búsqueda si el campo está vacío
   if (buscadorLibros.value.trim() === '') {
     router.push({ path: '/biblioteca' })
   } else {

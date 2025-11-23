@@ -125,6 +125,10 @@ import {
   actualizarCarrera,
   eliminarCarrera as eliminarCarreraAPI,
 } from '@/data/api'
+import { useCatalogAdminStore, useCatalogBibliotecaStore } from '@/stores/catalog' // 👈 NEW
+
+const catalogAdmin = useCatalogAdminStore() // 👈 NEW
+const catalogBiblioteca = useCatalogBibliotecaStore() // 👈 NEW
 
 const nombreCarrera = ref('')
 const carreras = ref([])
@@ -173,6 +177,10 @@ const submitCarrera = async () => {
 
     limpiarFormulario()
     await cargarCarreras()
+
+    // 🔥 Recargar catálogo global (Selects en AdminLibros, filtros, etc.)
+    await catalogAdmin.reload()
+    await catalogBiblioteca.reload()
   } catch (err) {
     console.error('Error:', err)
     const errorMsg =
@@ -189,13 +197,7 @@ const editarCarrera = (carrera) => {
   nombreCarrera.value = carrera.nombre_carrera
 
   window.scrollTo({ top: 0, behavior: 'smooth' })
-
   mostrarMensaje(`Editando: ${carrera.nombre_carrera}`, 'info')
-}
-
-const cancelarEdicion = () => {
-  limpiarFormulario()
-  mostrarMensaje('Edición cancelada', 'info')
 }
 
 const confirmarEliminar = (carrera) => {
@@ -211,8 +213,13 @@ const eliminarCarrera = async () => {
   try {
     const res = await eliminarCarreraAPI(carreraAEliminar.value.id_carrera)
     mostrarMensaje(res.mensaje || 'Carrera eliminada exitosamente', 'success')
+
     await cargarCarreras()
     cerrarModal()
+
+    // 🔥 También refrescamos catálogo global
+    await catalogAdmin.reload()
+    await catalogBiblioteca.reload()
   } catch (err) {
     console.error('Error eliminando carrera:', err)
     const errorMsg =
@@ -221,6 +228,11 @@ const eliminarCarrera = async () => {
   } finally {
     cargando.value = false
   }
+}
+
+const cancelarEdicion = () => {
+  limpiarFormulario()
+  mostrarMensaje('Edición cancelada', 'info')
 }
 
 const cerrarModal = () => {

@@ -30,11 +30,17 @@ const router = createRouter({
       path: '/biblioteca',
       name: 'biblioteca',
       component: () => import('../views/BibliotecaVista.vue'),
+      meta: {
+        requiresAuth: true,
+      },
     },
     {
       path: '/leer/:id_libro',
       name: 'leer',
       component: () => import('../views/LectorVista.vue'),
+      meta: {
+        requiresAuth: true,
+      },
     },
     {
       path: '/admin-biblioteca',

@@ -1,104 +1,154 @@
 <template>
+  <!-- 🔹 Overlay móvil -->
   <transition name="fade">
     <div
       v-if="visible"
-      class="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm md:hidden"
+      class="fixed inset-0 z-40 bg-black/45 backdrop-blur-sm md:hidden"
       @click.self="emitCerrar"
     ></div>
   </transition>
 
+  <!-- 🔹 Panel lateral -->
   <transition name="slide">
     <div
       v-if="visible"
-      class="fixed md:static top-0 left-0 z-50 h-full md:h-auto w-full md:w-64 bg-gray-100 shadow-xl overflow-y-auto"
+      class="fixed md:static top-0 left-0 z-50 h-full md:h-auto w-full md:w-72 bg-white text-slate-900 shadow-2xl md:shadow-sm overflow-y-auto md:rounded-2xl border border-slate-200"
     >
-      <div class="p-4 flex items-center justify-between border-b md:border-none">
-        <h3 class="font-bold text-lg">Filtros</h3>
+      <!-- Header -->
+      <div class="p-4 flex items-center justify-between border-b border-slate-200">
+        <div class="flex items-center gap-2">
+          <div>
+            <h3 class="font-semibold text-base leading-tight">Filtros</h3>
+            <p class="text-[11px] text-slate-400 md:text-slate-500">
+              Refina los resultados de la biblioteca
+            </p>
+          </div>
+        </div>
+
         <!-- Botón cerrar (solo en móvil) -->
-        <button class="md:hidden text-gray-600 text-2xl font-bold" @click="emitCerrar">✕</button>
+        <button class="md:hidden text-slate-300 text-2xl font-bold" @click="emitCerrar">✕</button>
       </div>
 
       <!-- Contenido -->
-      <div class="p-4">
+      <div class="p-4 space-y-6 text-sm">
         <!-- Carreras -->
-        <div class="mb-4">
-          <h4 class="text-sm font-semibold mb-2">Carreras</h4>
-          <div
-            v-for="carrera in carreras.slice(0, limiteCarreras)"
-            :key="carrera.id"
-            class="flex items-center space-x-2 mb-1"
-          >
-            <label class="w-full hover:bg-blue-900/40">
-              <input
-                type="checkbox"
-                :value="carrera.slug_carrera"
-                v-model="filtrosLocales.carreras"
-                class="accent-blue-500"
-              />
-              <span>{{ carrera.nombre_carrera }}</span>
-            </label>
+        <section>
+          <div class="flex items-center justify-between mb-2">
+            <div>
+              <h4
+                class="text-xs font-semibold uppercase tracking-wide text-slate-400 md:text-slate-500"
+              >
+                Carreras
+              </h4>
+              <p class="text-[11px] text-slate-500 md:text-slate-500">Selecciona una o varias</p>
+            </div>
           </div>
-          <button
-            v-if="limiteCarreras < carreras.length"
-            @click="limiteCarreras += 5"
-            class="text-blue-600 text-sm hover:underline mt-2"
-          >
-            Ver más
-          </button>
-          <button
-            v-else-if="carreras.length > 5"
-            @click="limiteCarreras = 5"
-            class="text-blue-600 text-sm hover:underline mt-2"
-          >
-            Ver menos
-          </button>
-        </div>
+
+          <div class="space-y-1">
+            <div
+              v-for="carrera in carreras.slice(0, limiteCarreras)"
+              :key="carrera.id"
+              class="rounded-lg overflow-hidden"
+            >
+              <label
+                class="flex items-center gap-2 px-2 py-1.5 cursor-pointer hover:bg-slate-900/40 md:hover:bg-slate-100"
+              >
+                <input
+                  type="checkbox"
+                  :value="carrera.slug_carrera"
+                  v-model="filtrosLocales.carreras"
+                  class="accent-sky-500 w-4 h-4 rounded border-slate-400"
+                />
+                <span class="flex-1 truncate text-xs md:text-sm">
+                  {{ carrera.nombre_carrera }}
+                </span>
+              </label>
+            </div>
+          </div>
+
+          <div class="mt-2">
+            <button
+              v-if="limiteCarreras < carreras.length"
+              @click="limiteCarreras += 5"
+              class="text-xs text-sky-600 hover:underline"
+            >
+              Ver más
+            </button>
+            <button
+              v-else-if="carreras.length > 5"
+              @click="limiteCarreras = 5"
+              class="text-xs text-sky-600 hover:underline"
+            >
+              Ver menos
+            </button>
+          </div>
+        </section>
 
         <!-- Autores -->
-        <div class="mb-4">
-          <h4 class="text-sm font-semibold mb-2">Autores</h4>
-          <div
-            v-for="autor in autores.slice(0, limiteAutores)"
-            :key="autor.id"
-            class="flex items-center space-x-2 mb-1"
-          >
-            <label class="w-full hover:bg-blue-900/40">
-              <input
-                type="checkbox"
-                :value="autor.slug_autor"
-                v-model="filtrosLocales.autores"
-                class="accent-blue-500"
-              />
-              <span>{{ autor.nombre_completo }}</span>
-            </label>
+        <section>
+          <div class="flex items-center justify-between mb-2">
+            <div>
+              <h4
+                class="text-xs font-semibold uppercase tracking-wide text-slate-400 md:text-slate-500"
+              >
+                Autores
+              </h4>
+              <p class="text-[11px] text-slate-500 md:text-slate-500">Filtra por autoría</p>
+            </div>
           </div>
-          <button
-            v-if="limiteAutores < autores.length"
-            @click="limiteAutores += 5"
-            class="text-blue-600 text-sm hover:underline mt-2"
-          >
-            Ver más
-          </button>
-          <button
-            v-else-if="autores.length > 5"
-            @click="limiteAutores = 5"
-            class="text-blue-600 text-sm hover:underline mt-2"
-          >
-            Ver menos
-          </button>
-        </div>
+
+          <div class="space-y-1">
+            <div
+              v-for="autor in autores.slice(0, limiteAutores)"
+              :key="autor.id"
+              class="rounded-lg overflow-hidden"
+            >
+              <label
+                class="flex items-center gap-2 px-2 py-1.5 cursor-pointer hover:bg-slate-900/40 md:hover:bg-slate-100"
+              >
+                <input
+                  type="checkbox"
+                  :value="autor.slug_autor"
+                  v-model="filtrosLocales.autores"
+                  class="accent-sky-500 w-4 h-4 rounded border-slate-400"
+                />
+                <span class="flex-1 truncate text-xs md:text-sm">
+                  {{ autor.nombre_completo }}
+                </span>
+              </label>
+            </div>
+          </div>
+
+          <div class="mt-2">
+            <button
+              v-if="limiteAutores < autores.length"
+              @click="limiteAutores += 5"
+              class="text-xs text-sky-400 md:text-sky-600 hover:underline"
+            >
+              Ver más
+            </button>
+            <button
+              v-else-if="autores.length > 5"
+              @click="limiteAutores = 5"
+              class="text-xs text-sky-400 md:text-sky-600 hover:underline"
+            >
+              Ver menos
+            </button>
+          </div>
+        </section>
 
         <!-- Botones -->
-        <div class="flex flex-col md:flex-row md:space-x-2">
+        <div class="pt-2 flex flex-col md:flex-row md:space-x-2 gap-2">
           <button
             @click="emitLimpiar"
-            class="w-full md:w-auto mb-2 md:mb-0 px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            class="w-full md:w-auto px-3 py-2 rounded-full text-xs sm:text-sm bg-sky-500 text-white font-medium hover:bg-sky-600 transition-colors"
           >
             Limpiar filtros
           </button>
+
           <button
             @click="emitCerrar"
-            class="w-full md:w-auto px-3 py-2 bg-gray-300 rounded hover:bg-gray-400"
+            class="w-full md:w-auto px-3 py-2 rounded-full text-xs sm:text-sm bg-slate-800 text-slate-100 md:bg-slate-100 md:text-slate-800 hover:bg-slate-700 md:hover:bg-slate-200 transition-colors"
           >
             Cerrar
           </button>

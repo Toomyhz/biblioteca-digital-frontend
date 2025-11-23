@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-[url('/fondo-lector.jpg')] bg-cover bg-center bg-fixed">
+  <div id="lector-vista" class="bg-[url('/fondo-lector.jpg')] bg-cover bg-center bg-fixed">
     <div class="flex flex-col min-h-screen">
       <!-- 🔹 Barra superior -->
       <div
@@ -75,7 +75,7 @@
         <input
           type="range"
           min="1"
-          max="6"
+          max="3"
           step="0.1"
           v-model.number="scale"
           class="w-48 accent-blue-950"
@@ -112,7 +112,7 @@ let currentRenderTask = null
 
 // --- 1. EL ARREGLO DEL ZOOM ---
 // Vigilamos la variable 'scale'. Cuando cambia, repintamos.
-watch(scale, (newScale) => {
+watch(scale, () => {
   renderPage(pageNum.value)
 })
 
@@ -256,3 +256,8 @@ function nextPage() {
   }
 }
 </script>
+<style scoped>
+#lector-vista {
+  overscroll-behavior: none;
+}
+</style>

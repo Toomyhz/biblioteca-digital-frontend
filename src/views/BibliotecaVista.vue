@@ -1,44 +1,64 @@
 <template>
-  <div class="max-w-[80%] mx-auto flex flex-col">
-    <!-- 🔍 Buscador arriba -->
-    <BuscadorLibros />
+  <div>
+    <div class="max-w-6xl mx-auto flex flex-col px-3 sm:px-4 lg:px-6 py-4 sm:py-6 gap-4">
+      <!-- Header / título -->
+      <header class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+          <h1 class="text-xl sm:text-2xl font-semibold text-slate-900">Biblioteca digital</h1>
+          <p class="text-sm text-slate-500">Busca libros por título, autor o carrera.</p>
+        </div>
 
-    <!-- Botón de filtros -->
-    <div class="mb-4">
-      <button @click="toggleFiltros" class="px-4 py-2 bg-gray-300 rounded">
-        {{ showFiltros ? 'Ocultar filtros' : 'Mostrar filtros' }}
-      </button>
-    </div>
+        <!-- Buscador alineado a la derecha en desktop -->
+        <div class="w-full sm:w-80">
+          <BuscadorLibros />
+        </div>
+      </header>
 
-    <!--  Contenedor principal -->
-    <div class="flex flex-1">
-      <!-- Sidebar lateral -->
-      <SidebarFiltros
-        v-if="showFiltros"
-        v-model:visible="showFiltros"
-        @limpiar="limpiarFiltros"
-        :carreras="carreras"
-        :autores="autores"
-        :filtros="filtros"
-        @update-filtros="onUpdateFiltros"
-      />
+      <!-- Fila: botón filtros + resumen -->
+      <div class="flex items-center justify-between gap-2">
+        <button
+          @click="toggleFiltros"
+          class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm border border-slate-300 bg-white shadow-sm hover:bg-slate-100 transition-colors"
+        >
+          <span>{{ showFiltros ? 'Ocultar filtros' : 'Mostrar filtros' }}</span>
+        </button>
 
-      <!--  Listado ocupa el resto -->
-      <div class="flex-1 p-4 overflow-auto">
-        <ListaLibros
-          :libros="libros"
-          :paginacion="paginacion"
-          @cambiarPagina="(nuevaPagina) => actualizarPagina(nuevaPagina)"
-          @cambiarLimite="(nuevoLimite) => actualizarLimite(nuevoLimite)"
+        <p v-if="paginacion.total" class="hidden sm:inline text-xs text-slate-500">
+          {{ paginacion.total }} libro(s) encontrado(s)
+        </p>
+      </div>
+
+      <!-- Contenedor principal -->
+      <div class="flex flex-1 gap-4">
+        <!-- Sidebar lateral -->
+        <SidebarFiltros
+          v-if="showFiltros"
+          v-model:visible="showFiltros"
+          @limpiar="limpiarFiltros"
+          :carreras="carreras"
+          :autores="autores"
+          :filtros="filtros"
+          @update-filtros="onUpdateFiltros"
         />
+
+        <!-- Listado ocupa el resto -->
+        <div class="flex-1">
+          <ListaLibros
+            :libros="libros"
+            :paginacion="paginacion"
+            @cambiarPagina="(nuevaPagina) => actualizarPagina(nuevaPagina)"
+            @cambiarLimite="(nuevoLimite) => actualizarLimite(nuevoLimite)"
+          />
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, watch, onMounted } from 'vue'
+import { ref, watch, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useCatalogBibliotecaStore } from '@/stores/catalog'
 
 // 🧩 Componentes
 import BuscadorLibros from '@/components/biblioteca/BuscadorLibros.vue'
@@ -46,7 +66,7 @@ import ListaLibros from '@/components/biblioteca/ListaLibros.vue'
 import SidebarFiltros from '@/components/biblioteca/SidebarFiltros.vue'
 
 // 🌐 API
-import { getAutores, getCarreras, getBiblioteca } from '@/data/api'
+import { getBiblioteca } from '@/data/api'
 
 const router = useRouter()
 const route = useRoute()
@@ -58,22 +78,23 @@ const filtros = ref({
   busqueda: route.query.busqueda || '',
 })
 
+const catalog = useCatalogBibliotecaStore()
+const autores = computed(() => catalog.autores)
+const carreras = computed(() => catalog.carreras)
+
 const libros = ref([])
 const paginacion = ref({
   pagina_actual: 1,
   limite: 10,
   total: 0,
+  total_paginas: 0,
 })
-const carreras = ref([])
-const autores = ref([])
+
 const showFiltros = ref(false)
 
 // 🚀 Cargar datos iniciales
 onMounted(async () => {
-  let respAutores = await getAutores()
-  autores.value = respAutores.data
-  let respCarreras = await getCarreras()
-  carreras.value = respCarreras.data
+  await catalog.load()
   await fetchLibros()
 })
 
@@ -86,7 +107,10 @@ const fetchLibros = async () => {
       filtros: filtros.value,
     })
     libros.value = data.libros.data || []
-    paginacion.value.total = data.total // <- viene del backend
+    paginacion.value.pagina_actual = data.libros.paginacion.pagina
+    paginacion.value.limite = data.libros.paginacion.limite
+    paginacion.value.total = data.libros.paginacion.total
+    paginacion.value.total_paginas = data.libros.paginacion.total_paginas
   } catch (err) {
     console.error('Error al cargar libros:', err)
   }

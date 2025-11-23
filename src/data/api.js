@@ -109,7 +109,11 @@ export async function actualizarLibro(id, libro, pdfFile = null) {
       fileFormData.append('pdf', pdfFile)
 
       // 2.2: Hacemos la SEGUNDA llamada PUT a /libros/<id>/archivo
-      await apiClient.put(`/libros/${id}/archivo`, fileFormData)
+      await apiClient.put(`/libros/${id}/archivo`, fileFormData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      })
     }
     return res.data
   } catch (err) {
@@ -266,6 +270,16 @@ export const getBiblioteca = async ({ pagina = 1, limite = 10, filtros = {} }) =
     return resp.data
   } catch (err) {
     console.error('Error en getBiblitoeca', err)
+    throw err
+  }
+}
+
+export const getBibliotecaCatalogo = async () => {
+  try {
+    const resp = await apiClient.get('/biblioteca/catalogo')
+    return resp.data
+  } catch (err) {
+    console.error('Error en getBibliotecaCatalogo', err)
     throw err
   }
 }

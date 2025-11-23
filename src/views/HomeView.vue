@@ -7,4 +7,3 @@ import HomeSection from '@/components/home/HomeSection.vue'
     <HomeSection />
   </main>
 </template>
-<style scoped></style>

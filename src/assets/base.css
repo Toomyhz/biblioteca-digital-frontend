@@ -1,6 +1,6 @@
 /* color palette from <https://github.com/vuejs/theme> */
-
 body {
+  overscroll-behavior: none;
   color: var(--color-text);
   background: var(--color-background);
   transition:
@@ -40,4 +40,8 @@ body {
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #2563eb;
+}
+html,
+body {
+  overscroll-behavior: none;
 }
