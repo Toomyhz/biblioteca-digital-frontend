@@ -417,7 +417,7 @@ const submitLibro = async () => {
     limpiarFormulario()
     await cargarLibros()
     // 🔥 IMPORTANTE: refrescar catálogo global para selects/filtro
-    await catalogBiblioteca.load()
+    await catalogBiblioteca.reload()
   } catch (err) {
     console.error('Error:', err)
     const errorMsg =
@@ -469,6 +469,7 @@ const eliminarLibro = async () => {
     mostrarMensaje(errorMsg, 'error')
   } finally {
     cargando.value = false
+    await catalogBiblioteca.reload()
   }
 }
 
