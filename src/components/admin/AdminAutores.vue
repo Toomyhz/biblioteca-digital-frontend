@@ -136,10 +136,10 @@ import {
   actualizarAutor,
   eliminarAutor as eliminarAutorAPI,
 } from '@/data/api'
-import { useCatalogAdminStore, useCatalogBibliotecaStore } from '@/stores/catalog' // 🔹 nuevo import
+import { useCatalogAdminStore, useCatalogBibliotecaStore } from '@/stores/catalog'
 
-const catalogAdmin = useCatalogAdminStore() // 🔹 instancia del store
-const catalogBiblioteca = useCatalogBibliotecaStore() // 🔹 instancia del store
+const catalogAdmin = useCatalogAdminStore() // instancia del store
+const catalogBiblioteca = useCatalogBibliotecaStore() //instancia del store
 
 const nombre = ref('')
 const nacionalidad = ref('')
@@ -192,7 +192,6 @@ const submitAutor = async () => {
     limpiarFormulario()
     await cargarAutores()
 
-    // 🔥 IMPORTANTE: refrescar catálogo global para selects/filtros
     await catalogAdmin.reload()
     await catalogBiblioteca.reload()
   } catch (err) {
@@ -216,7 +215,7 @@ const eliminarAutor = async () => {
     await cargarAutores()
     cerrarModal()
 
-    // 🔥 También refrescamos el catálogo global
+    // Refrescamos el catálogo global
     await catalogAdmin.reload()
     await catalogBiblioteca.reload()
   } catch (err) {

@@ -294,3 +294,16 @@ export const getUrl = async (id_libro) => {
     throw err
   }
 }
+
+// TOP LIBROS
+export const getLibrosRecientes = async (limite = 6) => {
+  try {
+    const response = await apiClient.get('/libros/top', {
+      params: { limite },
+    })
+    return response.data
+  } catch (error) {
+    console.error('Error al obtener libros recientes:', error)
+    throw error
+  }
+}

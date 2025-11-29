@@ -125,10 +125,10 @@ import {
   actualizarCarrera,
   eliminarCarrera as eliminarCarreraAPI,
 } from '@/data/api'
-import { useCatalogAdminStore, useCatalogBibliotecaStore } from '@/stores/catalog' // 👈 NEW
+import { useCatalogAdminStore, useCatalogBibliotecaStore } from '@/stores/catalog'
 
-const catalogAdmin = useCatalogAdminStore() // 👈 NEW
-const catalogBiblioteca = useCatalogBibliotecaStore() // 👈 NEW
+const catalogAdmin = useCatalogAdminStore()
+const catalogBiblioteca = useCatalogBibliotecaStore()
 
 const nombreCarrera = ref('')
 const carreras = ref([])
@@ -178,7 +178,7 @@ const submitCarrera = async () => {
     limpiarFormulario()
     await cargarCarreras()
 
-    // 🔥 Recargar catálogo global (Selects en AdminLibros, filtros, etc.)
+    // Recargar catálogo global (Selects en AdminLibros, filtros, etc.)
     await catalogAdmin.reload()
     await catalogBiblioteca.reload()
   } catch (err) {
@@ -217,7 +217,7 @@ const eliminarCarrera = async () => {
     await cargarCarreras()
     cerrarModal()
 
-    // 🔥 También refrescamos catálogo global
+    // Refrescamos catálogo global
     await catalogAdmin.reload()
     await catalogBiblioteca.reload()
   } catch (err) {

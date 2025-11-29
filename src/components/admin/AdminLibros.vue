@@ -87,20 +87,61 @@
         />
       </div>
 
-      <!-- Input del pdf -->
+      <!-- Input del pdf con preview -->
       <div class="mb-3">
-        <label class="block text-sm font-medium text-gray-700 mb-2"> PDF del libro </label>
-        <input
-          type="file"
-          accept=".pdf"
-          @change="onFileChange"
-          :disabled="cargando"
-          ref="fileInput"
-          class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100 disabled:opacity-50"
-        />
-        <p v-if="pdfFile" class="mt-1 text-sm text-gray-600">
-          Archivo seleccionado: {{ pdfFile.name }}
-        </p>
+        <label class="block text-sm font-medium text-gray-700 mb-2">
+          {{ modoEdicion ? 'Cambiar PDF del libro (opcional)' : 'PDF del libro' }}
+        </label>
+
+        <div class="flex gap-4 items-start">
+          <!-- Input file -->
+          <div class="flex-1">
+            <input
+              type="file"
+              accept=".pdf"
+              @change="onFileChange"
+              :disabled="cargando"
+              ref="fileInput"
+              class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100 disabled:opacity-50"
+            />
+
+            <!-- Mostrar nuevo archivo seleccionado -->
+            <p v-if="pdfFile" class="mt-1 text-sm text-green-600 font-medium">
+              Nuevo archivo: {{ pdfFile.name }}
+            </p>
+
+            <!-- Mostrar PDF actual en modo edición -->
+            <p v-else-if="modoEdicion && pdfActualNombre" class="mt-1 text-sm text-gray-600">
+              Archivo actual: {{ pdfActualNombre }}
+            </p>
+          </div>
+
+          <!-- Vista previa del PDF actual (solo en edición) -->
+          <div v-if="modoEdicion && pdfUrlActual && !pdfFile" class="flex-shrink-0">
+            <a
+              :href="pdfUrlActual"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded transition-colors"
+            >
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                />
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                />
+              </svg>
+              Ver PDF actual
+            </a>
+          </div>
+        </div>
       </div>
 
       <div class="flex gap-2 mt-4">
@@ -180,6 +221,9 @@
             <th class="px-4 py-2 text-left text-xs font-semibold uppercase text-gray-600">ISBN</th>
             <th class="px-4 py-2 text-left text-xs font-semibold uppercase text-gray-600">Año</th>
             <th class="px-4 py-2 text-left text-xs font-semibold uppercase text-gray-600">
+              Fecha Creación
+            </th>
+            <th class="px-4 py-2 text-left text-xs font-semibold uppercase text-gray-600">
               Acciones
             </th>
           </tr>
@@ -220,6 +264,9 @@
             </td>
             <td class="px-4 py-2 font-mono text-sm text-gray-600">{{ libro.isbn || 'N/A' }}</td>
             <td class="px-4 py-2 font-mono text-sm text-gray-600">{{ libro.anio_publicacion }}</td>
+            <td class="px-4 py-2 text-gray-600">
+              {{ new Date(libro.fecha_creacion).toLocaleDateString() }}
+            </td>
             <td class="px-4 py-2">
               <div class="flex gap-2">
                 <button
@@ -318,6 +365,7 @@ import {
   agregarLibro,
   actualizarLibro,
   eliminarLibro as eliminarLibroAPI,
+  DO_URL,
 } from '@/data/api'
 
 const titulo = ref('')
@@ -328,6 +376,8 @@ const estado = ref('disponible')
 const anioPublicacion = ref(new Date().getFullYear())
 const pdfFile = ref(null)
 const fileInput = ref(null)
+const pdfUrlActual = ref(null)
+const pdfActualNombre = ref(null)
 
 const libros = ref([])
 
@@ -416,7 +466,6 @@ const submitLibro = async () => {
 
     limpiarFormulario()
     await cargarLibros()
-    // 🔥 IMPORTANTE: refrescar catálogo global para selects/filtro
     await catalogBiblioteca.reload()
   } catch (err) {
     console.error('Error:', err)
@@ -437,6 +486,16 @@ const editarLibro = (libro) => {
   idsCarreras.value = libro.carreras ? libro.carreras.map((c) => c.id_carrera) : []
   estado.value = libro.estado || 'disponible'
   anioPublicacion.value = libro.anio_publicacion || new Date().getFullYear()
+
+  // Guardar info del PDF actual
+  if (libro.archivo_pdf) {
+    pdfUrlActual.value = `${DO_URL}${libro.archivo_pdf}`
+    // Extraer solo el nombre del archivo
+    pdfActualNombre.value = libro.archivo_pdf.split('/').pop()
+  } else {
+    pdfUrlActual.value = null
+    pdfActualNombre.value = null
+  }
 
   window.scrollTo({ top: 0, behavior: 'smooth' })
   mostrarMensaje(`Editando: ${libro.titulo}`, 'info')
@@ -491,6 +550,8 @@ const limpiarFormulario = () => {
   }
   modoEdicion.value = false
   libroEditando.value = null
+  pdfUrlActual.value = null
+  pdfActualNombre.value = null
 }
 
 const mostrarMensaje = (texto, tipo = 'info') => {
