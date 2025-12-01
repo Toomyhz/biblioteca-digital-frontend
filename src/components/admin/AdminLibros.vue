@@ -365,7 +365,6 @@ import {
   agregarLibro,
   actualizarLibro,
   eliminarLibro as eliminarLibroAPI,
-  DO_URL,
 } from '@/data/api'
 
 const titulo = ref('')
@@ -489,7 +488,7 @@ const editarLibro = (libro) => {
 
   // Guardar info del PDF actual
   if (libro.archivo_pdf) {
-    pdfUrlActual.value = `${DO_URL}${libro.archivo_pdf}`
+    pdfUrlActual.value = `/leer/${libro.id_libro}`
     // Extraer solo el nombre del archivo
     pdfActualNombre.value = libro.archivo_pdf.split('/').pop()
   } else {

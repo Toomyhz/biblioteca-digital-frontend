@@ -1,5 +1,5 @@
 <template>
-  <section class="bg-white">
+  <section>
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
       <!-- Header -->
       <header class="mb-6">
@@ -28,7 +28,7 @@
           v-for="(libro, index) in libros"
           :key="libro.id_libro"
           class="group cursor-pointer"
-          @click="irALibro(libro.slug_titulo)"
+          @click="irALibro(libro.id_libro)"
         >
           <!-- Portada -->
           <div
@@ -143,9 +143,9 @@ const mostrarAutores = (autores) => {
   return autores.map((a) => a.nombre_completo).join(', ')
 }
 
-const irALibro = (slug) => {
-  if (slug) {
-    router.push(`/biblioteca/${slug}`)
+const irALibro = (id) => {
+  if (id) {
+    router.push(`/leer/${id}`)
   }
 }
 
